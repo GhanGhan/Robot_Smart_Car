@@ -8,9 +8,12 @@
 #define in3 5
 #define in4 4
 
+int const Cool_Term_Min_Input_Byte_Size = 3;
+
 int rotDirection = 0;
 int speedA = 120;
 int speedB = 220;
+int speed;
 
 void setup() {
   // put your setup code here, to run once:
@@ -32,6 +35,7 @@ void setup() {
   digitalWrite(in2, LOW);
   digitalWrite(in3, HIGH);
   digitalWrite(in4, LOW);
+  Serial.println("Enter Motor Speed: ");
 
 }
 
@@ -44,6 +48,25 @@ void loop() {
   digitalWrite(in2, LOW);
   digitalWrite(in3, HIGH);
   digitalWrite(in4, LOW);
+
+  int num = Serial.available();
+  if(num > Cool_Term_Min_Input_Byte_Size){ //set to 2 to avoid false positives when using CoolTerm to communicate over the Serial Port
+    Serial.print("Number of bytes sent is ");
+    Serial.println(num);
+    speed = Serial.parseInt();
+    speedA = speed;
+    speedB = speed;
+    Serial.print("MotorA speed is: ");
+    Serial.println(speedA);
+    Serial.print("MotorB speed is: ");
+    Serial.println(speedB);
+    Serial.println("Enter Motor Speed: ");
+  }
+  //else{
+  //  Serial.println("There is no Serial Input");
+  //}
+  
+
   delay(500);
   
 
