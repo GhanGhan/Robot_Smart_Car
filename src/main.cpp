@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 #define enA 9
 #define enB 10
 #define in1 7
@@ -7,9 +9,16 @@
 #define in4 4
 
 int rotDirection = 0;
+int speedA = 120;
+int speedB = 220;
 
 void setup() {
   // put your setup code here, to run once:
+  Serial.begin(9600);
+  Serial.print("MotorA speed is: ");
+  Serial.println(speedA);
+  Serial.print("MotorB speed is: ");
+  Serial.println(speedB);
   
   pinMode(enA, OUTPUT);
   pinMode(in1, OUTPUT);
@@ -28,8 +37,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  int speedA = 255;
-  int speedB = 255;
+
   analogWrite(enA, speedA);
   analogWrite(enB, speedB);
   digitalWrite(in1, HIGH);
