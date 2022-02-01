@@ -1,14 +1,14 @@
 #include <Arduino.h>
 
-#define enA 9
-#define enB 10
-#define in1 7
-#define in2 6
+const byte enA = 9;
+const byte enB = 10;
+const byte in1 = 7;
+const byte in2 = 6;
 
-#define in3 5
-#define in4 4
+const byte in3 = 5;
+const byte in4 = 4;
 
-int const Cool_Term_Min_Input_Byte_Size = 3;
+const byte Cool_Term_Min_Input_Byte_Size = 3;
 
 int rotDirection = 0;
 int speedA = 120;
@@ -48,6 +48,8 @@ void loop() {
   digitalWrite(in2, LOW);
   digitalWrite(in3, HIGH);
   digitalWrite(in4, LOW);
+  Serial.println(speedA);
+  Serial.println(speedB);
 
   int num = Serial.available();
   if(num > Cool_Term_Min_Input_Byte_Size){ //set to 2 to avoid false positives when using CoolTerm to communicate over the Serial Port
