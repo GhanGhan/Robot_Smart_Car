@@ -48,10 +48,10 @@ void setMotorBReverse();
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
-  Serial.print("MotorA speed is: ");
-  Serial.println(speedA);
-  Serial.print("MotorB speed is: ");
-  Serial.println(speedB);
+  //Serial.print("MotorA speed is: ");
+  //Serial.println(speedA);
+  //Serial.print("MotorB speed is: ");
+  //Serial.println(speedB);
   
   pinMode(enA, OUTPUT);
   pinMode(in1, OUTPUT);
@@ -73,12 +73,12 @@ void loop() {
 
   int num = Serial.available();
   if(num > 0){ 
-    Serial.print("Number of bytes sent is ");
-    Serial.println(num);
+    //Serial.print("Number of bytes sent is ");
+    //Serial.println(num);
 
     int recievedVal = Serial.read();
-    Serial.print("The recieved Value is ");
-    Serial.println(recievedVal);
+    //Serial.print("The recieved Value is ");
+    //Serial.println(recievedVal);
 
     if(recievedVal == '0'){// Set motor speed to 0
       speedA = 0;
@@ -89,16 +89,12 @@ void loop() {
     else if (recievedVal == 'r'){//Place motors in reverse motion
       setMotorAReverse();
       setMotorBReverse();
-      Serial.println("Reverse Motors");
-      //DirectionA = false;
-      //DirectionB = false;
+      //Serial.println("Reverse Motors");
     }
     else if (recievedVal == 'f'){//place motors in forward motion
       setMotorAForward();
       setMotorBForward();
-      Serial.println("Forward Motors");
-      //DirectionA = true;
-      //DirectionB = true;
+      //Serial.println("Forward Motors");
     }
     else if (recievedVal >= '1' && recievedVal <= '9'){//A non-zero motor speed was entered
       byte digits = num - 1;
@@ -114,19 +110,15 @@ void loop() {
         speed = 100*(recievedVal - '0') + 10*(value2 -'0') +  value3- '0';
       }
 
-      
-      
       speedA = speed; speedB = speed;
       analogWrite(enA, speedA);
       analogWrite(enB, speedB);
-      Serial.print("MotorA speed is: ");
-      Serial.println(speedA);
-      Serial.print("MotorB speed is: ");
-      Serial.println(speedB);
+      //Serial.print("MotorA speed is: ");
+      //Serial.println(speedA);
+      //Serial.print("MotorB speed is: ");
+      //Serial.println(speedB);
     }
-    
-  Serial.read();//to get the carriage return bit
-
+  Serial.read();//to get the carriage return byte
   }
 
   
@@ -134,20 +126,24 @@ void loop() {
   rpmA = (durationA/(float)Pulses_Per_Rotation)*60*mills/delayTime;
   rpmB = (durationB/(float)Pulses_Per_Rotation)*60*mills/delayTime;
 
-  Serial.print("Pulses of Motor A: ");
+  Serial.print("Pulses A: ");
   Serial.print(durationA);
-  Serial.print("     rpmA: ");
+  Serial.print(",");
+  Serial.print("Rpm A: ");
   Serial.print(rpmA);
-  Serial.print(" Direction: ");
+  Serial.print(",");
+  Serial.print("Direction A: ");
   Serial.print(DirectionA);
-
-  Serial.print("   Pulses of Motor B: ");
+  Serial.print(",");
+  Serial.print("Pulses B: ");
   Serial.print(durationB);
-  Serial.print("     rpmB: ");
+  Serial.print(",");
+  Serial.print("Rpm B: ");
   Serial.print(rpmB);
-  Serial.print(" Direction: ");
-  Serial.println(DirectionB);
-  
+  Serial.print(",");
+  Serial.print("Direction B: ");
+  Serial.print(DirectionB);
+  Serial.println();
   
   
   durationA = 0;
@@ -198,11 +194,11 @@ void wheelSpeedB()
     int val_B2 = digitalRead(encB2);
     if(val_B2 == LOW && DirectionB)//Checks if wheel is no longer moving forward and is now in reverse
     {
-      DirectionB = true;// false; //Direction flips but its the opposite value
+      DirectionB = true;
     }
     else if(val_B2 == HIGH && !DirectionB)//Checks if wheel is no longer reversing and is now moving forward
     {
-      DirectionB = false;//true; // Direction flips but its the opposite value
+      DirectionB = false;
     }
   }
   previous_B1 = current_B1;
