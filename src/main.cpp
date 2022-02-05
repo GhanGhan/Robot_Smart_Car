@@ -1,23 +1,30 @@
 #include <Arduino.h>
 
 //PWM pins for MotorA and MotorB respectively.  They control the motor speed.
-const byte enA = 9; //Enable A
-const byte enB = 10;//Enable B
+const int enA = 9; //Enable A
+const int enB = 10;//Enable B
 
 //Input Pins for MotorA and B.  They control the direction of the motors
-const byte in1 = 7;//Inputs for Motor A
-const byte in2 = 6;
-const byte in3 = 5;//Inputs for Motor B
-const byte in4 = 4;
+const int in1 = 7;//Inputs for Motor A
+const int in2 = 6;
+const int in3 = 5;//Inputs for Motor B
+const int in4 = 4;
 
 //Encoder pins for Motor A
-const byte encA1 = 2;//A Pin -> the interrupt pin 0
-const byte encA2 = 8;//B Pin
-byte previous_A1;
-volatile int duration = 0;//the number of the pulses
-float rpm = 0;
-boolean Direction;//the rotation direction
+const int encA1 = 2;//A Pin -> the interrupt pin 0
+const int encA2 = 8;//B Pin
+int previous_A1;
+volatile int durationA = 0;//the number of the pulses
+float rpmA = 0;
+volatile bool DirectionA;//the rotation direction
 
+//Encoder pins for Motor B
+const int encB1 = 3;//A Pin -> the interrupt pin 1
+const int encB2 = 11;//B Pin
+int previous_B1;
+volatile int durationB = 0;//the number of the pulses
+float rpmB = 0;
+volatile bool DirectionB;//the rotation direction
 
 const int Pulses_Per_Rotation = 1920; //In the wiki it states there are 960 pulses, but we are checking change in states
 // i.e. rising edge and falliing, edge therefore 1920 = 960*2
@@ -25,13 +32,13 @@ const int Pulses_Per_Rotation = 1920; //In the wiki it states there are 960 puls
 const int mills = 1000;
 const int delayTime = 250; 
 
-int rotDirection = 0;
 int speedA = 0;
 int speedB = 0;
 int speed;
 
 void EncoderInit();
-void wheelSpeed();
+void wheelSpeedA();
+void wheelSpeedB();
 void setMotorAForward();
 void setMotorBForward();
 void setMotorAReverse();
@@ -82,12 +89,16 @@ void loop() {
     else if (recievedVal == 'r'){//Place motors in reverse motion
       setMotorAReverse();
       setMotorBReverse();
-      Serial.print("Reverse Motors");
+      Serial.println("Reverse Motors");
+      //DirectionA = false;
+      //DirectionB = false;
     }
     else if (recievedVal == 'f'){//place motors in forward motion
       setMotorAForward();
       setMotorBForward();
-      Serial.print("forward Motors");
+      Serial.println("Forward Motors");
+      //DirectionA = true;
+      //DirectionB = true;
     }
     else if (recievedVal >= '1' && recievedVal <= '9'){//A non-zero motor speed was entered
       byte digits = num - 1;
@@ -96,14 +107,14 @@ void loop() {
       }
       else if(digits == 2){//two digits were entered
         int value = Serial.read();
-        speed = 10*(recievedVal - '0') + value- '0';
+        speed = 10*(recievedVal - '0') + value - '0';
       }
       else if(digits == 3){//three digits were entered
         int value2 = Serial.read(), value3 = Serial.read();
         speed = 100*(recievedVal - '0') + 10*(value2 -'0') +  value3- '0';
       }
 
-      Serial.read();//to get the carriage return bit
+      
       
       speedA = speed; speedB = speed;
       analogWrite(enA, speedA);
@@ -114,68 +125,113 @@ void loop() {
       Serial.println(speedB);
     }
     
-
+  Serial.read();//to get the carriage return bit
 
   }
-  
-  Serial.print("Pulse: ");
-  Serial.print(duration);
 
-  rpm = (duration/(float)Pulses_Per_Rotation)*60*mills/delayTime;
-  Serial.print("     RPM: ");
-  Serial.println(rpm);
-  duration = 0;
+  
+  
+  rpmA = (durationA/(float)Pulses_Per_Rotation)*60*mills/delayTime;
+  rpmB = (durationB/(float)Pulses_Per_Rotation)*60*mills/delayTime;
+
+  Serial.print("Pulses of Motor A: ");
+  Serial.print(durationA);
+  Serial.print("     rpmA: ");
+  Serial.print(rpmA);
+  Serial.print(" Direction: ");
+  Serial.print(DirectionA);
+
+  Serial.print("   Pulses of Motor B: ");
+  Serial.print(durationB);
+  Serial.print("     rpmB: ");
+  Serial.print(rpmB);
+  Serial.print(" Direction: ");
+  Serial.println(DirectionB);
+  
+  
+  
+  durationA = 0;
+  durationB = 0;
   delay(delayTime);
 }
 
 void EncoderInit()
 {
-  Direction = true;//default -> Forward
+  DirectionA = true;//default -> Forward
+  DirectionB = true;
   pinMode(encA2,INPUT);
-  attachInterrupt(0, wheelSpeed, CHANGE);
+  pinMode(encB2, INPUT);
+  attachInterrupt(digitalPinToInterrupt(encA1), wheelSpeedA, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(encB1), wheelSpeedB, CHANGE);
 }
 
 /**
  * ISR.  Incrememnts/decrememnts the number of pulses for when the motor is rotating forward/backward
  * On rising edge it verifies the direction of the motor.
  */
-void wheelSpeed()
+void wheelSpeedA()
 {
   int current_A1 = digitalRead(encA1);
   if((previous_A1 == LOW) && current_A1==HIGH)//only checking direction when A1 rises from LOW to HIGH
   {
     int val_A2 = digitalRead(encA2);
-    if(val_A2 == LOW && Direction)//Checks if wheel is no longer moving forward and is now in reverse
+    if(val_A2 == LOW && DirectionA)//Checks if wheel is no longer moving forward and is now in reverse
     {
-      Direction = false; //Reverse
+      DirectionA = false; //Reverse
     }
-    else if(val_A2 == HIGH && !Direction)//Checks if wheel is no longer reversing and is now moving forward
+    else if(val_A2 == HIGH && !DirectionA)//Checks if wheel is no longer reversing and is now moving forward
     {
-      Direction = true;  //Forward
+      DirectionA = true;  //Forward
     }
   }
   previous_A1 = current_A1;
 
-  if(!Direction)  duration++;
-  else  duration--;
+  if(DirectionA)  durationA++;
+  else  durationA--;
 }
 
-void setMotorAForward(){
-  digitalWrite(in1, HIGH);
-  digitalWrite(in2, LOW);
-}
+void wheelSpeedB()
+{
+  int current_B1 = digitalRead(encB1);
+  if((previous_B1 == LOW) && current_B1==HIGH)//only checking direction when B1 rises from LOW to HIGH
+  {
+    int val_B2 = digitalRead(encB2);
+    if(val_B2 == LOW && DirectionB)//Checks if wheel is no longer moving forward and is now in reverse
+    {
+      DirectionB = true;// false; //Direction flips but its the opposite value
+    }
+    else if(val_B2 == HIGH && !DirectionB)//Checks if wheel is no longer reversing and is now moving forward
+    {
+      DirectionB = false;//true; // Direction flips but its the opposite value
+    }
+  }
+  previous_B1 = current_B1;
+  
 
-void setMotorBForward(){
-  digitalWrite(in3, HIGH);
-  digitalWrite(in4, LOW);
+  if(DirectionB)  durationB++;
+  else  durationB--;
 }
 
 void setMotorAReverse(){
-  digitalWrite(in1, LOW);
-  digitalWrite(in2, HIGH);
+  digitalWrite(in1, HIGH);
+  digitalWrite(in2, LOW);
+  DirectionA = false;
 }
 
 void setMotorBReverse(){
+  digitalWrite(in3, HIGH);
+  digitalWrite(in4, LOW);
+  DirectionB = false;
+}
+
+void setMotorAForward(){
+  digitalWrite(in1, LOW);
+  digitalWrite(in2, HIGH);
+  DirectionA = true;
+}
+
+void setMotorBForward(){
   digitalWrite(in3, LOW);
   digitalWrite(in4, HIGH);
+  DirectionB = true;
 }
