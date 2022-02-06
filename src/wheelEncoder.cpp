@@ -30,7 +30,7 @@ volatile bool DirectionB;//the rotation direction
 const int Pulses_Per_Rotation = 1920;
 
 const int mills = 1000;
-const int delayTime = 250; 
+const int delayTime = 10; 
 
 int speedA = 0;
 int speedB = 0;
