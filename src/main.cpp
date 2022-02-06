@@ -91,8 +91,8 @@ void loop() {
   errorA = speedA - rpmA; 
   errorB = speedB - rpmB;
   
-  errorAI = errorAI + delayTime*errorAI/1000.0;
-  errorBI = errorBI + delayTime*errorBI/1000.0;
+  errorAI = errorAI + delayTime*errorA/1000.0;
+  errorBI = errorBI + delayTime*errorB/1000.0;
 
   //u(t)
   conA = Kp*errorA + Ki*errorAI;
