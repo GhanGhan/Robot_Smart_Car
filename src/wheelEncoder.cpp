@@ -2,14 +2,14 @@
 #include "wheelEncoder.h"
 
 //PWM pins for MotorA and MotorB respectively.  They control the motor speed.
-const int enA = 9; //Enable A
-const int enB = 10;//Enable B
+const int enA = 10;//9; //Enable A
+const int enB = 9;//10;//Enable B
 
 //Input Pins for MotorA and B.  They control the direction of the motors
-const int in1 = 7;//Inputs for Motor A
-const int in2 = 6;
-const int in3 = 5;//Inputs for Motor B
-const int in4 = 4;
+const int in1 = 5;//7;//Inputs for Motor A
+const int in2 = 4;//6;
+const int in3 = 7;//5;//Inputs for Motor B
+const int in4 = 6;//4;
 
 //Encoder pins for Motor A
 const int encA1 = 2;//A Pin -> the interrupt pin 0
@@ -55,13 +55,13 @@ void wheelSpeedA()
   if((previous_A1 == LOW) && current_A1==HIGH)//only checking direction when A1 rises from LOW to HIGH
   {
     int val_A2 = digitalRead(encA2);
-    if(val_A2 == LOW && DirectionA)//Checks if wheel is no longer moving forward and is now in reverse
+    if(val_A2 == LOW && !DirectionA)//Checks if wheel is no longer moving forward and is now in reverse
     {
-      DirectionA = false; //Reverse
+      DirectionA = true;//false; //Reverse
     }
-    else if(val_A2 == HIGH && !DirectionA)//Checks if wheel is no longer reversing and is now moving forward
+    else if (val_A2 == HIGH && DirectionA)//Checks if wheel is no longer reversing and is now moving forward
     {
-      DirectionA = true;  //Forward
+      DirectionA = false;//true;  //Forward
     }
   }
   previous_A1 = current_A1;
@@ -78,11 +78,11 @@ void wheelSpeedB()
     int val_B2 = digitalRead(encB2);
     if(val_B2 == LOW && DirectionB)//Checks if wheel is no longer moving forward and is now in reverse
     {
-      DirectionB = true;
+      DirectionB = false;//true;
     }
     else if(val_B2 == HIGH && !DirectionB)//Checks if wheel is no longer reversing and is now moving forward
     {
-      DirectionB = false;
+      DirectionB = true;//false;
     }
   }
   previous_B1 = current_B1;
@@ -95,23 +95,23 @@ void wheelSpeedB()
 void setMotorAReverse(){
   digitalWrite(in1, HIGH);
   digitalWrite(in2, LOW);
-  DirectionA = false;
+  //DirectionA = false;
 }
 
 void setMotorBReverse(){
   digitalWrite(in3, HIGH);
   digitalWrite(in4, LOW);
-  DirectionB = false;
+  //DirectionB = false;
 }
 
 void setMotorAForward(){
   digitalWrite(in1, LOW);
   digitalWrite(in2, HIGH);
-  DirectionA = true;
+  //DirectionA = true;
 }
 
 void setMotorBForward(){
   digitalWrite(in3, LOW);
   digitalWrite(in4, HIGH);
-  DirectionB = true;
+  //DirectionB = true;
 }

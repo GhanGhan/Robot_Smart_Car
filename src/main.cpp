@@ -1,12 +1,13 @@
 #include <Arduino.h>
 #include "wheelEncoder.h"
 
-float Kp = 1.0;//10;
-float Ki = 1.0;//5;//40;
-float Kd = 0.001;
+float Kp = 8.5;
+float Ki = 5;
+float Kd = 0.02;
 float errorA, errorB, conA, conB;
 float errorAIntegral = 0, errorBIntegral = 0;
 float errorADerivative = 0, errorBDerivative = 0;
+float step = 0.2;
 
 void setup() {
   
@@ -29,9 +30,7 @@ void setup() {
 }
 
 void loop() {
-  
-  //used to test noise of speed acquisition of the encoders, very little if any noise, LPF may not be required
-  //we will go straight to PID
+  //Testing Ramp Input
   /*
   if(speed < 130){
     speed += 2;
@@ -41,13 +40,14 @@ void loop() {
     analogWrite(enB, speedB);
   }
   */
-  
-  
-  
-  
-  
-  
 
+  //Testing Sinuisoidal Input
+  /*
+  speed = 130.0*sin(step);
+  speedA = speed; speedB = speed;
+  step = step+0.2;
+  */
+  
   int num = Serial.available();
   if(num > 0){ 
     //Serial.print("Number of bytes sent is ");
@@ -59,8 +59,6 @@ void loop() {
       speedA = 0;
       speedB = 0;
       speed = 0;
-      analogWrite(enA, speedA);
-      analogWrite(enB, speedB);
     }
     else if (recievedVal == 'r'){//Place motors in reverse motion
       setMotorAReverse();
@@ -105,7 +103,6 @@ void loop() {
     
     }//end recievedVal if-else-if statements
     
-
     Serial.read();//to get the carriage return byte
 
   }// end num if statement
@@ -125,43 +122,63 @@ void loop() {
   conA = Kp*errorA + Ki*errorAIntegral + Kd*errorADerivative;
   conB = Kp*errorB + Ki*errorBIntegral + Kd*errorBDerivative;
 
+  
+  if(conA > 255)
+    conA = 255;
+  else if(conA < -255)
+    conA = -255;
+  if(conB > 255)
+    conB = 255;
+  else if(conB < -255)
+    conB = -255;
+  
   if(conA < 0)
-  {
     setMotorAReverse();
-  }
-  else
-  {
+  else if(conA > 0)
     setMotorAForward();
-  }
 
   if(conB < 0)
-  {
     setMotorBReverse();
-  }
-  else
-  {
+  else if(conB > 0)
     setMotorBForward();
-  }
 
-  if(fabs(conA) > 255)
-    conA = 255;
-  if(fabs(conB) > 255)
-    conB = 255;
+  
   
   analogWrite(enA, fabs(conA));
   analogWrite(enB, fabs(conB));
   
+  
+  /*
+  if(speedA < 0)
+    setMotorAReverse();
+  else if(speedA > 0)
+    setMotorAForward();
+
+  if(speedB < 0)
+    setMotorBReverse();
+  else if(speedB > 0)
+    setMotorBForward();
+
+  analogWrite(enA, abs(speedA));
+  analogWrite(enB, abs(speedB));
+  */
+  
+ 
   rpmA = (durationA/(float)Pulses_Per_Rotation)*60*mills/delayTime;
   rpmB = (durationB/(float)Pulses_Per_Rotation)*60*mills/delayTime;
+ 
 
   Serial.print("Error A: ");
   Serial.print(errorA);
   Serial.print(",");
   Serial.print("Rpm A: ");
   Serial.print(rpmA);
+  Serial.print(",");
+  Serial.print("Control A: ");
+  Serial.print(conA);
   //Serial.print(",");
-  //Serial.print("Control A: ");
-  //Serial.print(conA);
+  //Serial.print("Direction A: ");
+  //Serial.print(DirectionA);
   Serial.print(",");
   Serial.print("Error B: ");
   Serial.print(errorB);
@@ -171,13 +188,17 @@ void loop() {
   Serial.print(",");
   Serial.print("Speed: ");
   Serial.print(speed);
+  Serial.print(",");
+  Serial.print("Control B: ");
+  Serial.print(conB);
   //Serial.print(",");
-  //Serial.print("Control B: ");
-  //Serial.print(conB);
+  //Serial.print("Direction B: ");
+  //Serial.print(DirectionB);
   Serial.println();
   
   durationA = 0;
   durationB = 0;
+
   delay(delayTime);
 }// end loop
 
