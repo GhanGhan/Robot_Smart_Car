@@ -1,10 +1,12 @@
 #include <Arduino.h>
 #include "wheelEncoder.h"
 
-float Kp = 10;
-float Ki = 40;
+float Kp = 1.0;//10;
+float Ki = 1.0;//5;//40;
+float Kd = 0.001;
 float errorA, errorB, conA, conB;
-float errorAI = 0, errorBI = 0;
+float errorAIntegral = 0, errorBIntegral = 0;
+float errorADerivative = 0, errorBDerivative = 0;
 
 void setup() {
   
@@ -31,14 +33,20 @@ void loop() {
   //used to test noise of speed acquisition of the encoders, very little if any noise, LPF may not be required
   //we will go straight to PID
   /*
-  if(speed < 255){
-    speed += 5;
+  if(speed < 130){
+    speed += 2;
     speedA = speed;
     speedB = speed;
     analogWrite(enA, speedA);
     analogWrite(enB, speedB);
   }
   */
+  
+  
+  
+  
+  
+  
 
   int num = Serial.available();
   if(num > 0){ 
@@ -62,7 +70,24 @@ void loop() {
       setMotorAForward();
       setMotorBForward();
     }
-    else if (recievedVal >= '1' && recievedVal <= '9'){//A non-zero motor speed was entered
+    else if(recievedVal == '-'){//A non-zero negative motor speed
+      byte digits = num - 2;
+      if(digits == 1){//only one digit was entered
+        int value1 = Serial.read();
+        speed = -(value1 - '0');
+      }
+      else if(digits == 2){//two digits were entered
+        int value1 = Serial.read(), value2 = Serial.read();
+        speed = -(10*(value1 - '0') + value2 - '0');
+      }
+      else if(digits == 3){//three digits were entered
+        int value1 = Serial.read(), value2 = Serial.read(), value3 = Serial.read();
+        speed = -(100*(value1 - '0') + 10*(value2 -'0') +  value3 - '0');
+      }
+      //r(t)
+      speedA = speed; speedB = speed;
+    }
+    else if (recievedVal >= '1' && recievedVal <= '9'){//A non-zero motor positive speed was entered
       byte digits = num - 1;
       if(digits == 1){//only one digit was entered
         speed = recievedVal - '0';
@@ -77,12 +102,11 @@ void loop() {
       }
       //r(t)
       speedA = speed; speedB = speed;
-
-      
-      
+    
     }//end recievedVal if-else-if statements
+    
 
-  Serial.read();//to get the carriage return byte
+    Serial.read();//to get the carriage return byte
 
   }// end num if statement
 
@@ -91,12 +115,15 @@ void loop() {
   errorA = speedA - rpmA; 
   errorB = speedB - rpmB;
   
-  errorAI = errorAI + delayTime*errorA/1000.0;
-  errorBI = errorBI + delayTime*errorB/1000.0;
+  errorAIntegral = errorAIntegral + delayTime*errorA/1000.0;
+  errorBIntegral = errorBIntegral + delayTime*errorB/1000.0;
+
+  errorADerivative = 1000.0*errorA/delayTime;
+  errorBDerivative = 1000.0*errorB/delayTime;
 
   //u(t)
-  conA = Kp*errorA + Ki*errorAI;
-  conB = Kp*errorB + Ki*errorBI;
+  conA = Kp*errorA + Ki*errorAIntegral + Kd*errorADerivative;
+  conB = Kp*errorB + Ki*errorBIntegral + Kd*errorBDerivative;
 
   if(conA < 0)
   {
