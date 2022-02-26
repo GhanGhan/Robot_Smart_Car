@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include "wheelEncoder.h"
 
-float Kp = 8.5;
-float Ki = 5;
+float Kp = 6.0;//8.5;
+float Ki = 6;//5;
 float Kd = 0.02;
 float errorA, errorB, conA, conB;
 float errorAIntegral = 0, errorBIntegral = 0;
@@ -11,7 +11,7 @@ float step = 0.2;
 
 void setup() {
   
-  Serial.begin(57600);
+  Serial.begin(9600);
   //Set up Motor Driver EN (PWM) and INPUT pins for motor A and B
   pinMode(enA, OUTPUT);
   pinMode(in1, OUTPUT);
@@ -52,9 +52,11 @@ void loop() {
   if(num > 0){ 
     //Serial.print("Number of bytes sent is ");
     //Serial.println(num);
-
+    ///---------------FOR USB CONNECTION!!!!!!!
+    ///*
     int recievedVal = Serial.read();
 
+    
     if(recievedVal == '0'){// Set motor speed to 0
       speedA = 0;
       speedB = 0;
@@ -102,8 +104,14 @@ void loop() {
       speedA = speed; speedB = speed;
     
     }//end recievedVal if-else-if statements
-    
+    //*/
+    ///---------------FOR BLUETOOTH CONNECTION!!!!!!!
+    /*
+    speed = Serial.parseInt(); 
+    speedA = speed; speedB = speed;
+    */
     Serial.read();//to get the carriage return byte
+    
 
   }// end num if statement
 
@@ -117,6 +125,11 @@ void loop() {
 
   errorADerivative = 1000.0*errorA/delayTime;
   errorBDerivative = 1000.0*errorB/delayTime;
+  if(speed == 0){
+    errorAIntegral = 0; errorADerivative = 0;
+    errorBIntegral = 0; errorBDerivative = 0;
+  }
+
 
   //u(t)
   conA = Kp*errorA + Ki*errorAIntegral + Kd*errorADerivative;
@@ -168,29 +181,29 @@ void loop() {
   rpmB = (durationB/(float)Pulses_Per_Rotation)*60*mills/delayTime;
  
 
-  Serial.print("Error A: ");
-  Serial.print(errorA);
-  Serial.print(",");
+  //Serial.print("Error A: ");
+  //Serial.print(errorA);
+  //Serial.print(",");
   Serial.print("Rpm A: ");
   Serial.print(rpmA);
-  Serial.print(",");
-  Serial.print("Control A: ");
-  Serial.print(conA);
+  //Serial.print(",");
+  //Serial.print("Control A: ");
+  //Serial.print(conA);
   //Serial.print(",");
   //Serial.print("Direction A: ");
   //Serial.print(DirectionA);
-  Serial.print(",");
-  Serial.print("Error B: ");
-  Serial.print(errorB);
+  //Serial.print(",");
+  //Serial.print("Error B: ");
+  //Serial.print(errorB);
   Serial.print(",");
   Serial.print("Rpm B: ");
   Serial.print(rpmB);
   Serial.print(",");
   Serial.print("Speed: ");
   Serial.print(speed);
-  Serial.print(",");
-  Serial.print("Control B: ");
-  Serial.print(conB);
+  //Serial.print(",");
+  //Serial.print("Control B: ");
+  //Serial.print(conB);
   //Serial.print(",");
   //Serial.print("Direction B: ");
   //Serial.print(DirectionB);
