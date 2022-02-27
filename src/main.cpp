@@ -1,19 +1,20 @@
 #include <Arduino.h>
 #include "wheelEncoder.h"
 
-float Kp = 6.0;//8.5;
-float Ki = 6;//5;
+float Kp = 5.5;//8.5;
+float Ki = 7;//5;
 float Kd = 0.02;
 float errorA, errorB, conA, conB;
 float errorAIntegral = 0, errorBIntegral = 0;
 float errorADerivative = 0, errorBDerivative = 0;
+float oldErrorA(0), oldErrorB(0);
 float step = 0.2;
 int append = 'a';
 int prepend = 'b';
 
 void setup() {
   
-  Serial.begin(9600);
+  Serial.begin(19200);
   //Set up Motor Driver EN (PWM) and INPUT pins for motor A and B
   pinMode(enA, OUTPUT);
   pinMode(in1, OUTPUT);
@@ -172,8 +173,8 @@ void loop() {
   errorAIntegral = errorAIntegral + delayTime*errorA/1000.0;
   errorBIntegral = errorBIntegral + delayTime*errorB/1000.0;
 
-  errorADerivative = 1000.0*errorA/delayTime;
-  errorBDerivative = 1000.0*errorB/delayTime;
+  errorADerivative = 1000.0*(errorA-oldErrorA)/delayTime;
+  errorBDerivative = 1000.0*(errorB-oldErrorB)/delayTime;
   if(speed == 0){
     errorAIntegral = 0; errorADerivative = 0;
     errorBIntegral = 0; errorBDerivative = 0;
@@ -184,6 +185,8 @@ void loop() {
   conA = Kp*errorA + Ki*errorAIntegral + Kd*errorADerivative;
   conB = Kp*errorB + Ki*errorBIntegral + Kd*errorBDerivative;
 
+  oldErrorA = errorA;
+  oldErrorB = errorB;
   
   if(conA > 255)
     conA = 255;
