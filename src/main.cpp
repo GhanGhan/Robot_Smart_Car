@@ -1,24 +1,37 @@
 #include <Arduino.h>
 #include "wheelEncoder.h"
 
-float Kp = 5.5;//8.5;
-float Ki = 7;//5;
-float Kd = 0.02;
-float errorA, errorB, conA, conB;
-float errorAIntegral = 0, errorBIntegral = 0;
-float errorADerivative = 0, errorBDerivative = 0;
+// PID Control parameters
+const float KP = 5.75;    // Proportional Feedback
+const float KI = 7;       // Integral Feedback
+const float KD = 0.02;    // Derivative feedback
+
+//Current and past error values i.e e(n) and e(n-1) for Motors A and B
+float errorA(0), errorB(0);
 float oldErrorA(0), oldErrorB(0);
-float step = 0.2;
-int append = 'a';
-int prepend = 'b';
+//Control signal
+float conA(0), conB(0);   
+//"Integral" of current and past error values of Motors A and Motors B
+float errorAIntegral(0), errorBIntegral(0);
+//"Derivative" of current and previous error values of Motors A and Motors B
+float errorADerivative(0), errorBDerivative(0);
+//Error Detection bytes
+const int START_BYTE = 'a';
+const int END_BYTE = 'b';
 
 const int phoneBluetooth = 52;  //checks if have signal to connect to phone via bluetooth
 const int serialPort = 53;      //checks if have signal to connect to a serial port via bluetooth or USB
 
+int getNegativeSpeed_Port(int num);
+int getPositiveSpeed_Port(int num, int recievedVal);
+
+int getNegativeSpeed_BT(int num);
+int getPositiveSpeed_BT(int num, int recievedVal);
+
 void setup() {
   
-  Serial.begin(19200);
-  Serial1.begin(19200);
+  Serial.begin(57600);
+  Serial1.begin(57600);
   pinMode( 18, INPUT_PULLUP );
   pinMode( 19, INPUT_PULLUP );
   //Set up Motor Driver EN (PWM) and INPUT pins for motor A and B
@@ -55,128 +68,62 @@ void loop() {
 
   //Testing Sinuisoidal Input
   /*
+  float step = 0.2;
   speed = 130.0*sin(step);
   speedA = speed; speedB = speed;
   step = step+0.2;
   */
   
+  ///---------------FOR SERIAL PORT CONNECTION (USB/BLUETOOTH) CONNECTION!!!!!!!
   int num = Serial.available();
-  if(num > 0){ 
+  if(num > 0  && digitalRead(serialPort)==HIGH)
+  { 
     //Serial.print("Number of bytes sent is ");
     //Serial.println(num);
-    
-    ///---------------FOR SERIAL PORT CONNECTION (USB/BLUETOOTH) CONNECTION!!!!!!!
-    if(digitalRead(serialPort)==HIGH)
+    int recievedVal = Serial.read();
+    if(recievedVal == '0') // Set motor speed to 0
     {
-      int recievedVal = Serial.read();
-      if(recievedVal == '0'){// Set motor speed to 0
-        speedA = 0;
-        speedB = 0;
-        speed = 0;
-      }
-      else if (recievedVal == 'r'){//Place motors in reverse motion
-        setMotorAReverse();
-        setMotorBReverse();
-      }
-      else if (recievedVal == 'f'){//place motors in forward motion
-        setMotorAForward();
-        setMotorBForward();
-      }
-      else if(recievedVal == '-'){//A non-zero negative motor speed
-        byte digits = num - 2;
-        if(digits == 1){//only one digit was entered
-          int value1 = Serial.read();
-          speed = -(value1 - '0');
-        }
-        else if(digits == 2){//two digits were entered
-          int value1 = Serial.read(), value2 = Serial.read();
-          speed = -(10*(value1 - '0') + value2 - '0');
-        }
-        else if(digits == 3){//three digits were entered
-          int value1 = Serial.read(), value2 = Serial.read(), value3 = Serial.read();
-          speed = -(100*(value1 - '0') + 10*(value2 -'0') +  value3 - '0');
-        }
-        //r(t)
-        speedA = speed; speedB = speed;
-      }
-      else if (recievedVal >= '1' && recievedVal <= '9'){//A non-zero motor positive speed was entered
-        byte digits = num - 1;
-        if(digits == 1){//only one digit was entered
-          speed = recievedVal - '0';
-        }
-        else if(digits == 2){//two digits were entered
-          int value = Serial.read();
-          speed = 10*(recievedVal - '0') + value - '0';
-        }
-        else if(digits == 3){//three digits were entered
-          int value2 = Serial.read(), value3 = Serial.read();
-          speed = 100*(recievedVal - '0') + 10*(value2 -'0') +  value3- '0';
-        }
-        //r(t)
-        speedA = speed; speedB = speed;
-      
-      }//end recievedVal if-else-if statements
+      speed = 0;
     }
+    else if(recievedVal == '-')//A non-zero negative motor speed
+    {
+      speed = getNegativeSpeed_Port(num);
+    }
+    else if (recievedVal >= '1' && recievedVal <= '9')//A non-zero motor positive speed was entered
+    {
+      speed = getPositiveSpeed_Port(num, recievedVal);
+    }//end recievedVal if-else-if statements
+    //r(t)
+    speedA = speed; speedB = speed;
     Serial.read();
   }// end num if statement -- SERIALPORT
     
   ///---------------FOR BLUETOOTH CONNECTION!!!!!!!
   ///*
-  num = Serial1.available();
-  if(num > 0)
+  int num1 = Serial1.available();
+  if(num1 > 0 && digitalRead(phoneBluetooth)==HIGH)
   {
-    if(digitalRead(phoneBluetooth)==HIGH)
+    int tempSpeed;
+    int recievedVal = Serial1.read();
+    if(recievedVal == START_BYTE)
     {
-      int tempSpeed;
-      int recievedVal = Serial1.read();
-      if(recievedVal == append)
+      recievedVal = Serial1.read();
+      num1 = num1 - 2; //'-2' for the START_BYTE and END_BYTE bytes
+      if(recievedVal == '0') // Set motor speed to 0
       {
-        recievedVal = Serial1.read();
-        if(recievedVal == '0'){// Set motor speed to 0
-          tempSpeed = 0;
-        }
-        else if (recievedVal == 'r'){//Place motors in reverse motion
-          setMotorAReverse();
-          setMotorBReverse();
-        }
-        else if (recievedVal == 'f'){//place motors in forward motion
-          setMotorAForward();
-          setMotorBForward();
-        }
-        else if(recievedVal == '-'){//A non-zero negative motor speed
-          byte digits = num - 2 -2; //last '-2' for the append and prepend bytes
-          if(digits == 1){//only one digit was entered
-            int value1 = Serial1.read();
-            tempSpeed = -(value1 - '0');
-          }
-          else if(digits == 2){//two digits were entered
-            int value1 = Serial1.read(), value2 = Serial1.read();
-            tempSpeed = -(10*(value1 - '0') + value2 - '0');
-          }
-          else if(digits == 3){//three digits were entered
-            int value1 = Serial1.read(), value2 = Serial1.read(), value3 = Serial1.read();
-          tempSpeed = -(100*(value1 - '0') + 10*(value2 -'0') +  value3 - '0');
-          }
-        }
-        else if (recievedVal >= '1' && recievedVal <= '9'){//A non-zero motor positive speed was entered
-          byte digits = num - 1 -2; //last '-2' for the append and prepend bytes;
-          if(digits == 1){//only one digit was entered
-            tempSpeed = recievedVal - '0';
-          }
-          else if(digits == 2){//two digits were entered
-            int value = Serial1.read();
-            tempSpeed = 10*(recievedVal - '0') + value - '0';
-          }
-          else if(digits == 3){//three digits were entered
-            int value2 = Serial1.read(), value3 = Serial1.read();
-            tempSpeed = 100*(recievedVal - '0') + 10*(value2 -'0') +  value3- '0';
-          }
-        }
-        if(Serial1.read() == 'b'){
-          speed = tempSpeed;
-          speedA = speed;
-          speedB = speed;
-        }
+        tempSpeed = 0;
+      }
+      else if(recievedVal == '-') //A non-zero negative motor speed was recieved
+      {
+        tempSpeed = getNegativeSpeed_BT(num1);
+      }
+      else if (recievedVal >= '1' && recievedVal <= '9') //A non-zero motor positive speed was recieved
+      {
+        tempSpeed = getPositiveSpeed_BT(num1, recievedVal);
+      }
+      if(Serial1.read() == 'b'){
+        speed = tempSpeed;
+        speedA = speed; speedB = speed;
       }
     }
     Serial1.read();//to get the carriage return byte
@@ -199,8 +146,8 @@ void loop() {
 
 
   //u(t)
-  conA = Kp*errorA + Ki*errorAIntegral + Kd*errorADerivative;
-  conB = Kp*errorB + Ki*errorBIntegral + Kd*errorBDerivative;
+  conA = KP*errorA + KI*errorAIntegral + KD*errorADerivative;
+  conB = KP*errorB + KI*errorBIntegral + KD*errorBDerivative;
 
   oldErrorA = errorA;
   oldErrorB = errorB;
@@ -301,3 +248,73 @@ void loop() {
   delay(delayTime);
 }// end loop
 
+
+int getNegativeSpeed_Port(int num){
+  byte digits = num - 2;
+  int speed;
+  if(digits == 1){//only one digit was entered
+    int value1 = Serial.read();
+    speed = -(value1 - '0');
+  }
+  else if(digits == 2){//two digits were entered
+    int value1 = Serial.read(), value2 = Serial.read();
+    speed = -(10*(value1 - '0') + value2 - '0');
+  }
+  else if(digits == 3){//three digits were entered
+    int value1 = Serial.read(), value2 = Serial.read(), value3 = Serial.read();
+    speed = -(100*(value1 - '0') + 10*(value2 -'0') +  value3 - '0');
+  }
+  return speed;
+}
+
+int getPositiveSpeed_Port(int num, int recievedVal){
+  byte digits = num - 1;
+  int speed;
+    if(digits == 1){//only one digit was entered
+    speed = recievedVal - '0';
+  }
+  else if(digits == 2){//two digits were entered
+    int value = Serial.read();
+    speed = 10*(recievedVal - '0') + value - '0';
+  }
+  else if(digits == 3){//three digits were entered
+    int value2 = Serial.read(), value3 = Serial.read();
+    speed = 100*(recievedVal - '0') + 10*(value2 -'0') +  value3- '0';
+  }
+  return speed;
+}
+
+int getNegativeSpeed_BT(int num){
+  byte digits = num - 2;
+  int speed;
+  if(digits == 1){//only one digit was entered
+    int value1 = Serial1.read();
+    speed = -(value1 - '0');
+  }
+  else if(digits == 2){//two digits were entered
+    int value1 = Serial1.read(), value2 = Serial1.read();
+    speed = -(10*(value1 - '0') + value2 - '0');
+  }
+  else if(digits == 3){//three digits were entered
+    int value1 = Serial1.read(), value2 = Serial1.read(), value3 = Serial1.read();
+    speed = -(100*(value1 - '0') + 10*(value2 -'0') +  value3 - '0');
+  }
+  return speed;
+}
+
+int getPositiveSpeed_BT(int num, int recievedVal){
+  byte digits = num - 1;
+  int speed;
+    if(digits == 1){//only one digit was entered
+    speed = recievedVal - '0';
+  }
+  else if(digits == 2){//two digits were entered
+    int value = Serial1.read();
+    speed = 10*(recievedVal - '0') + value - '0';
+  }
+  else if(digits == 3){//three digits were entered
+    int value2 = Serial1.read(), value3 = Serial1.read();
+    speed = 100*(recievedVal - '0') + 10*(value2 -'0') +  value3- '0';
+  }
+  return speed;
+}
