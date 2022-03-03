@@ -19,12 +19,19 @@ float errorADerivative(0), errorBDerivative(0);
 const int START_BYTE = 'a';
 const int END_BYTE = 'b';
 
+const float R = 3.25;
+const float L = 13;
+
 const int phoneBluetooth = 52;  //checks if have signal to connect to phone via bluetooth
 const int serialPort = 53;      //checks if have signal to connect to a serial port via bluetooth or USB
 
 int getNegativeSpeed_Port(int num);
 int getPositiveSpeed_Port(int num, int recievedVal);
-int getSpeed_Port(int num);
+int getSpeed_Port(int num, int recievedVal);
+
+int getNegativeRot_Port(int num);
+int getPositiveRot_Port(int num, int recievedVal);
+int getRot_Port(int num, int recievedVal);
 
 int getNegativeSpeed_BT(int num);
 int getPositiveSpeed_BT(int num, int recievedVal);
@@ -83,15 +90,27 @@ void loop() {
   step = step+0.2;
   */
   
+  //////////%%%%%%%%%%% GET SPEED (cm/s) AND OMEGA (deg/second)
   ///---------------FOR SERIAL PORT CONNECTION (USB/BLUETOOTH) CONNECTION!!!!!!!
+  //get speed value
   int num = Serial.available();
-  if(num > 0  && digitalRead(serialPort)==HIGH)
+  int recievedVal = Serial.read();
+  if(num > 0  && digitalRead(serialPort)==HIGH && recievedVal != 'c')
   { 
-    speed = getSpeed_Port(num);
+    speed = getSpeed_Port(num, recievedVal);
     //r(t)
     speedA = speed; speedB = speed;
     Serial.read();
   }// end=if statement -- SERIALPORT
+
+  //get rotation speed value
+  if(recievedVal == 'c')
+  {
+    rotSpeed = getRot_Port(num, recievedVal);
+    
+  }
+  
+  Serial.read();
     
   ///---------------FOR BLUETOOTH CONNECTION!!!!!!!
   int num1 = Serial1.available();
@@ -108,6 +127,17 @@ void loop() {
     Serial1.read();//to get the carriage return byte
   }// end if statement -- PHONEBLUETOOTH
 
+  float v = speed*2*PI*R/60; //convert speed (rpm) to (m/s)
+  float omega = rotSpeed*PI/180;
+
+  float vl(0), vr(0);
+
+  vr = (2*v+omega*L)/(2*R);
+  vl = (2*v-omega*L)/(2*R);
+
+  speedA = 60*vl/(2*PI);// convert rads/s to RPM
+  speedB = 60*vr/(2*PI);
+
   
   //e(t)
   errorA = speedA - rpmA; 
@@ -118,7 +148,7 @@ void loop() {
 
   errorADerivative = 1000.0*(errorA-oldErrorA)/delayTime;
   errorBDerivative = 1000.0*(errorB-oldErrorB)/delayTime;
-  if(speed == 0){
+  if(speed == 0 && rotSpeed == 0){
     errorAIntegral = 0; errorADerivative = 0;
     errorBIntegral = 0; errorBDerivative = 0;
   }
@@ -136,10 +166,12 @@ void loop() {
 
   rpmA = (durationA/(float)Pulses_Per_Rotation)*60*mills/delayTime;
   rpmB = (durationB/(float)Pulses_Per_Rotation)*60*mills/delayTime;
+
+  actualRotSpeed = (rpmB-rpmA)*1.5;
  
   //if(digitalRead(serialPort)==HIGH) ---Commented out because I want to be able to plot speed even when connected to Phone
   //{
-    printFromPort(0, 1, 1);
+    printFromPort(0, 1, 0);
   //}
 
   if(digitalRead(phoneBluetooth)==HIGH)
@@ -189,8 +221,7 @@ int getPositiveSpeed_Port(int num, int recievedVal){
   return motorSpeed;
 }
 
-int getSpeed_Port(int num){
-  int recievedVal = Serial.read();
+int getSpeed_Port(int num, int recievedVal){
   int motorSpeed;
     if(recievedVal == '0') // Set motor speed to 0
     {
@@ -206,6 +237,68 @@ int getSpeed_Port(int num){
     }//end recievedVal if-else-if statements
     return motorSpeed;
 }
+
+int getNegativeRot_Port(int num){
+  byte digits = num - 2;
+  int motorRot;
+  if(digits == 1){//only one digit was entered
+    int value1 = Serial.read();
+    motorRot = -(value1 - '0');
+  }
+  else if(digits == 2){//two digits were entered
+    int value1 = Serial.read(), value2 = Serial.read();
+    motorRot = -(10*(value1 - '0') + value2 - '0');
+  }
+  else if(digits == 3){//three digits were entered
+    int value1 = Serial.read(), value2 = Serial.read(), value3 = Serial.read();
+    motorRot = -(100*(value1 - '0') + 10*(value2 -'0') +  value3 - '0');
+  }
+  return motorRot;
+}
+
+int getPositiveRot_Port(int num, int recievedVal){
+  byte digits = num - 1;
+  int motorRot;
+    if(digits == 1){//only one digit was entered
+    motorRot = recievedVal - '0';
+  }
+  else if(digits == 2){//two digits were entered
+    int value = Serial.read();
+    motorRot = 10*(recievedVal - '0') + value - '0';
+  }
+  else if(digits == 3){//three digits were entered
+    int value2 = Serial.read(), value3 = Serial.read();
+    motorRot = 100*(recievedVal - '0') + 10*(value2 -'0') +  value3- '0';
+  }
+  return motorRot;
+}
+
+int getRot_Port(int num, int recievedVal){
+  int motorRot;
+  recievedVal = Serial.read();
+  num = num - 1;
+  if(recievedVal == '0') // Set motor speed to 0
+  {
+    motorRot = 0;
+  }
+  else if(recievedVal == '-')//A non-zero negative motor speed was entered
+  {
+    motorRot = getNegativeRot_Port(num);
+  }
+  else if (recievedVal >= '1' && recievedVal <= '9')//A non-zero motor positive speed was entered
+  {
+    motorRot = getPositiveRot_Port(num, recievedVal);
+  }//end recievedVal if-else-if statements
+  return motorRot;
+}
+
+
+
+
+
+
+
+
 
 int getNegativeSpeed_BT(int num){
   byte digits = num - 2;
@@ -289,6 +382,22 @@ void printFromPort(int printErrors, int printRPMs, int printControlSignals){
     Serial.print(conB);
     Serial.print(",");
   }
+
+  Serial.print(" Rot: ");
+  Serial.print(rotSpeed);
+  Serial.print(",");
+
+  Serial.print(" ARot: ");
+  Serial.print(actualRotSpeed);
+  Serial.print(",");
+
+  Serial.print(" SpeedA: ");
+  Serial.print(speedA);
+  Serial.print(",");
+
+  Serial.print(" SpeedB: ");
+  Serial.print(speedB);
+  Serial.print(",");
   
   Serial.print(" Speed: ");
   Serial.print(speed);

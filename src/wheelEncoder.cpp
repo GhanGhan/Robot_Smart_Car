@@ -36,6 +36,9 @@ int speedA = 0;
 int speedB = 0;
 int speed;
 
+int rotSpeed = 0;
+float actualRotSpeed = 0;
+
 
 
 void EncoderInit()

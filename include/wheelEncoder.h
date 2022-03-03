@@ -37,6 +37,10 @@ extern int speedA;
 extern int speedB;
 extern int speed;
 
+
+extern int rotSpeed;
+extern float actualRotSpeed;
+
 /**
  * Attaches the ISR for calculating the wheelspade of Motor A and Motor B to the appropriate encoder pins.
  * Also sets the secondary encoder pins for each pair as INPUT pins
