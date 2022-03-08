@@ -53,8 +53,8 @@ void applyControlInput();
 
 void setup() {
   
-  Serial.begin(57600);
-  Serial1.begin(57600);
+  Serial.begin(115200);
+  Serial1.begin(115200);
   pinMode( 18, INPUT_PULLUP );
   pinMode( 19, INPUT_PULLUP );
   //Set up Motor Driver EN (PWM) and INPUT pins for motor A and B
@@ -129,11 +129,18 @@ void loop() {
   {
     if(recievedValBT == START_BYTE_SPEED)
     {
+      //Serial.println("Get linear");
       int tempSpeed;
       tempSpeed = getSpeed_BT(num1);
-      if(Serial1.read() == END_BYTE_SPEED){
+      char dig = Serial1.read();
+      if(dig == END_BYTE_SPEED && tempSpeed <= 130 && tempSpeed >= -130){
         speed = tempSpeed;
-        speedA = speed; speedB = speed;
+        //Serial.println("Set linear");
+        //speedA = speed; speedB = speed;
+      }
+      else{
+        //Serial.println(tempSpeed);
+        //Serial.println(dig);
       }
       Serial1.read();//to get the carriage return byte
     }// end if statement -- PHONEBLUETOOTH
@@ -144,12 +151,18 @@ void loop() {
     //Serial.println(char(recievedValBT));
     if(recievedValBT == START_BYTE_ROT)
     {
-      //Serial.print("Correct Start Bit");
+      //Serial.println("Get rot");
       int tempRot;
       tempRot = getRot_BT(num1);
-      if(Serial1.read() == END_BYTE_ROT){
+      char dig = Serial1.read();
+      if(dig == END_BYTE_ROT && tempRot <= 360 && tempRot >= -360){
         rotSpeed = tempRot;
+        //Serial.println("Set rot");
         //Serial.print("Got end byte");
+      }
+      else{
+        //Serial.println(tempRot);
+        //Serial.println(dig);
       }
       Serial1.read();//to get the carriage return byte
     }// end if statement -- PHONEBLUETOOTH
@@ -158,11 +171,11 @@ void loop() {
   
 
   float v = speed*2*PI*R/60; //convert speed (rpm) to (m/s)
-  float omega = rotSpeed*PI/180;
+  float omega = rotSpeed*PI/180; //convert (deg/s) to (rad/s)
 
   float vl(0), vr(0);
 
-  vr = (2*v+omega*L)/(2*R);
+  vr = (2*v+omega*L)/(2*R);//convert (m/s) to (rad/s)
   vl = (2*v-omega*L)/(2*R);
 
   speedA = 60*vl/(2*PI);// convert rads/s to RPM
@@ -472,7 +485,7 @@ void printFromPort(int printErrors, int printRPMs, int printControlSignals){
   Serial.print(" ARot: ");
   Serial.print(actualRotSpeed);
   Serial.print(",");
-/*
+
   Serial.print(" SpeedA: ");
   Serial.print(speedA);
   Serial.print(",");
@@ -480,7 +493,7 @@ void printFromPort(int printErrors, int printRPMs, int printControlSignals){
   Serial.print(" SpeedB: ");
   Serial.print(speedB);
   Serial.print(",");
-  */
+  
   
   Serial.print(" Speed: ");
   Serial.print(speed);
@@ -498,10 +511,10 @@ void printFromBT(int printErrors, int printRPMs, int printControlSignals){
   }
   
   if(printRPMs == 1){
-    Serial1.print("RpmA: ");
+    Serial1.print("Left: ");
     Serial1.print(rpmA);
     Serial1.print(",");
-    Serial1.print(" Rpm B: ");
+    Serial1.print(" Right: ");
     Serial1.print(rpmB);
     Serial1.print(",");
   }
@@ -515,7 +528,7 @@ void printFromBT(int printErrors, int printRPMs, int printControlSignals){
     Serial1.print(",");
   }
   
-  Serial1.print(" Speed: ");
+  Serial1.print(" Sent Speed: ");
   Serial1.print(speed);
   Serial1.println();
 
@@ -524,8 +537,7 @@ void printFromBT(int printErrors, int printRPMs, int printControlSignals){
   Serial1.print(",");
 
   Serial1.print(" Actual DGS: ");
-  Serial1.print(actualRotSpeed);
-  Serial1.println(",");
+  Serial1.println(actualRotSpeed);
 }
 
 

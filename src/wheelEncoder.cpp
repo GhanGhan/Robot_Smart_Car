@@ -32,11 +32,11 @@ const int Pulses_Per_Rotation = 1920;
 const int mills = 1000;
 const int delayTime = 20; //10
 
-int speedA = 0;
-int speedB = 0;
-int speed;
+float speedA = 0;
+float speedB = 0;
+float speed;
 
-int rotSpeed = 0;
+float rotSpeed = 0;
 float actualRotSpeed = 0;
 
 

@@ -33,12 +33,12 @@ extern const int Pulses_Per_Rotation; //In the wiki it states there are 960 puls
 extern const int mills;
 extern const int delayTime; 
 
-extern int speedA;
-extern int speedB;
-extern int speed;
+extern float speedA;
+extern float speedB;
+extern float speed;
 
 
-extern int rotSpeed;
+extern float rotSpeed;
 extern float actualRotSpeed;
 
 /**
