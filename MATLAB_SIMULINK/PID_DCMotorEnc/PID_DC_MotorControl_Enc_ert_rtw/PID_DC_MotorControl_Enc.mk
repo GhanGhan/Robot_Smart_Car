@@ -2,7 +2,7 @@
 ## Makefile generated for component 'PID_DC_MotorControl_Enc'. 
 ## 
 ## Makefile     : PID_DC_MotorControl_Enc.mk
-## Generated on : Tue Feb 22 16:15:37 2022
+## Generated on : Tue Mar 08 12:50:20 2022
 ## Final product: $(RELATIVE_PATH_TO_ANCHOR)/PID_DC_MotorControl_Enc.elf
 ## Product type : executable
 ## 
@@ -35,7 +35,7 @@ CPP_STANDARD_OPTS         =
 ## TOOLCHAIN SPECIFICATIONS
 ###########################################################################
 
-# Toolchain Name:          Arduino AVR
+# Toolchain Name:          Arduino ARM
 # Supported Version(s):    
 # ToolchainInfo Version:   2021b
 # Specification Revision:  1.0
@@ -45,6 +45,7 @@ CPP_STANDARD_OPTS         =
 #-------------------------------------------
 
 # ARDUINO_ROOT
+# ARDUINO_PACKAGES_TOOLS_ROOT
 # ARDUINO_PORT
 # ARDUINO_MCU
 # ARDUINO_BAUD
@@ -55,61 +56,54 @@ CPP_STANDARD_OPTS         =
 # MACROS
 #-----------
 
-SHELL            = %SystemRoot%/system32/cmd.exe
-PRODUCT_HEX      = $(RELATIVE_PATH_TO_ANCHOR)/$(PRODUCT_NAME).hex
-PRODUCT_BIN      = $(RELATIVE_PATH_TO_ANCHOR)/$(PRODUCT_NAME).eep
-ARDUINO_TOOLS    = $(ARDUINO_ROOT)/hardware/tools/avr/bin
-ELF2EEP_OPTIONS  = -O ihex -j .eeprom --set-section-flags=.eeprom=alloc,load --no-change-warnings --change-section-lma .eeprom=0
-DOWNLOAD_ARGS    =  >tmp.trash 2>&1 -P$(ARDUINO_PORT) -V -q -q -q -q -F -C$(ARDUINO_ROOT)/hardware/tools/avr/etc/avrdude.conf -p$(ARDUINO_MCU) -c$(ARDUINO_PROTOCOL) -b$(ARDUINO_BAUD) -D -Uflash:w:
-SLIB_PATH        = C:/Users/Ghani/DOCUME~1/MATLAB/R2021b/ARDUIN~1/ARDUIN~2/FASTER~1
+SHELL                       = %SystemRoot%/system32/cmd.exe
+PRODUCT_HEX                 = $(RELATIVE_PATH_TO_ANCHOR)/$(PRODUCT_NAME).hex
+PRODUCT_BIN                 = $(RELATIVE_PATH_TO_ANCHOR)/$(PRODUCT_NAME).bin
+ARDUINO_TOOLS               = $(ARDUINO_PACKAGES_TOOLS_ROOT)/tools/arm-none-eabi-gcc/4.8.3-2014q1/bin
+SLIB_PATH                   = C:/Users/Ghani/DOCUME~1/MATLAB/R2021b/ARDUIN~1/ARDUIN~3/FASTER~1
 
 TOOLCHAIN_SRCS = 
 TOOLCHAIN_INCS = 
-TOOLCHAIN_LIBS = -lm -lcore
+TOOLCHAIN_LIBS = -Wl,--end-group -lm -gcc -lcore
 
 #------------------------
 # BUILD TOOL COMMANDS
 #------------------------
 
-# Assembler: Arduino AVR Assembler
+# Assembler: Arduino ARM Assembler
 AS_PATH = $(ARDUINO_TOOLS)
-AS = "$(AS_PATH)/avr-gcc"
+AS = "$(AS_PATH)/arm-none-eabi-gcc"
 
-# C Compiler: Arduino AVR C Compiler
+# C Compiler: Arduino ARM C Compiler
 CC_PATH = $(ARDUINO_TOOLS)
-CC = "$(CC_PATH)/avr-gcc"
+CC = "$(CC_PATH)/arm-none-eabi-gcc"
 
-# Linker: Arduino AVR Linker
+# Linker: Arduino ARM Linker
 LD_PATH = $(ARDUINO_TOOLS)
-LD = "$(LD_PATH)/avr-gcc"
+LD = "$(LD_PATH)/arm-none-eabi-gcc"
 
-# C++ Compiler: Arduino AVR C++ Compiler
+# C++ Compiler: Arduino ARM C++ Compiler
 CPP_PATH = $(ARDUINO_TOOLS)
-CPP = "$(CPP_PATH)/avr-g++"
+CPP = "$(CPP_PATH)/arm-none-eabi-g++"
 
-# C++ Linker: Arduino AVR C++ Linker
+# C++ Linker: Arduino ARM C++ Linker
 CPP_LD_PATH = $(ARDUINO_TOOLS)
-CPP_LD = "$(CPP_LD_PATH)/avr-gcc"
+CPP_LD = "$(CPP_LD_PATH)/arm-none-eabi-gcc"
 
-# Archiver: Arduino AVR Archiver
+# Archiver: Arduino ARM Archiver
 AR_PATH = $(ARDUINO_TOOLS)
-AR = "$(AR_PATH)/avr-ar"
+AR = "$(AR_PATH)/arm-none-eabi-ar"
 
 # MEX Tool: MEX Tool
 MEX_PATH = $(MATLAB_ARCH_BIN)
 MEX = "$(MEX_PATH)/mex"
 
 # Binary Converter: Binary Converter
-OBJCOPY_PATH = $(ARDUINO_ROOT)/hardware/tools/avr/bin
-OBJCOPY = "$(OBJCOPY_PATH)/avr-objcopy"
-
-# Hex Converter: Hex Converter
-OBJCOPY_PATH = $(ARDUINO_ROOT)/hardware/tools/avr/bin
-OBJCOPY = "$(OBJCOPY_PATH)/avr-objcopy"
+OBJCOPY_PATH = $(ARDUINO_PACKAGES_TOOLS_ROOT)/tools/arm-none-eabi-gcc/4.8.3-2014q1/bin
+OBJCOPY = "$(OBJCOPY_PATH)/arm-none-eabi-objcopy"
 
 # Download: Download
-DOWNLOAD_PATH = $(ARDUINO_TOOLS)
-DOWNLOAD = "$(DOWNLOAD_PATH)/avrdude"
+DOWNLOAD =
 
 # Execute: Execute
 EXECUTE = $(PRODUCT)
@@ -158,25 +152,23 @@ MEX_LDFLAGS          =
 
 ASFLAGS = -MMD -MP -MF"$(@:%.o=%.dep)" -MT"$@"  -Wall -x assembler-with-cpp $(ASFLAGS_ADDITIONAL) $(DEFINES) $(INCLUDES) -c
 
-CFLAGS = -std=gnu11  -c -w -ffunction-sections -fdata-sections  -MMD -DARDUINO=10801  -MMD -MP -MF"$(@:%.o=%.dep)" -MT"$@"  -Os -g
+CFLAGS = -std=gnu11 -Os -c -w -ffunction-sections -fdata-sections  -nostdlib  --param max-inline-insns-single=500  -Dprintf=iprintf  -DARDUINO=10801  -MMD -MP -MF"$(@:%.o=%.dep)" -MT"$@" -g
 
-LDFLAGS = -w -Os -Wl,--gc-sections,--relax -g
+LDFLAGS = -Os -Wl,-Map="$(PRODUCT_NAME).map" -Wl,--gc-sections -g
 
 SHAREDLIB_LDFLAGS = -g
 
-CPPFLAGS = -std=gnu++11 -fpermissive -fno-exceptions -fno-threadsafe-statics  -c -w -ffunction-sections -fdata-sections  -MMD -DARDUINO=10801  -MMD -MP -MF"$(@:%.o=%.dep)" -MT"$@"  -Os -g
+CPPFLAGS = -std=gnu++11 -fno-threadsafe-statics -fno-rtti -fno-exceptions  -Os -c -w -ffunction-sections -fdata-sections  -nostdlib  --param max-inline-insns-single=500  -Dprintf=iprintf  -DARDUINO=10801  -MMD -MP -MF"$(@:%.o=%.dep)" -MT"$@" -g
 
-CPP_LDFLAGS = -w -Os -Wl,--gc-sections,--relax -g
+CPP_LDFLAGS = -Os -Wl,-Map="$(PRODUCT_NAME).map" -Wl,--gc-sections -g
 
 CPP_SHAREDLIB_LDFLAGS = -g
 
-ARFLAGS = rcs
+ARFLAGS = ruvs
 
-OBJCOPYFLAGS_BIN = $(ELF2EEP_OPTIONS) $(PRODUCT) $(PRODUCT_BIN)
+OBJCOPYFLAGS_BIN = -O binary $(PRODUCT) $(PRODUCT_BIN)
 
-OBJCOPYFLAGS_HEX = -O ihex -R .eeprom $(PRODUCT) $(PRODUCT_HEX)
-
-DOWNLOAD_FLAGS = $(DOWNLOAD_ARGS)$(PRODUCT_HEX):i
+DOWNLOAD_FLAGS = 
 
 EXECUTE_FLAGS = 
 
@@ -194,7 +186,7 @@ BUILD_TYPE = "Top-Level Standalone Executable"
 ## INCLUDE PATHS
 ###########################################################################
 
-INCLUDES_BUILDINFO = -I$(START_DIR) -IC:/PROGRA~3/MATLAB/SUPPOR~1/R2021b/toolbox/target/SUPPOR~1/ARDUIN~2/include -IC:/PROGRA~3/MATLAB/SUPPOR~1/R2021b/toolbox/target/shared/svd/include -I$(START_DIR)/PID_DC_MotorControl_Enc_ert_rtw -I$(MATLAB_ROOT)/extern/include -I$(MATLAB_ROOT)/simulink/include -I$(MATLAB_ROOT)/rtw/c/src -I$(MATLAB_ROOT)/rtw/c/src/ext_mode/common -I$(MATLAB_ROOT)/rtw/c/ert -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/include -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/common -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/protocol/src -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/protocol/include -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/transport/include -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/transport/src -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/platform/include -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/platform/default -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/ext_mode/include -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/ext_mode/src -I$(MATLAB_ROOT)/rtw/c/ext_mode/common -I$(MATLAB_ROOT)/toolbox/coder/rtiostream/src -I$(ARDUINO_ROOT)/hardware/arduino/avr/cores/arduino -I$(ARDUINO_ROOT)/hardware/arduino/avr/variants/mega -IC:/PROGRA~3/MATLAB/SUPPOR~1/R2021b/toolbox/target/SUPPOR~1/ARDUIN~1/include -IC:/PROGRA~3/MATLAB/SUPPOR~1/R2021b/toolbox/target/SUPPOR~1/ARDUIN~1/SCHEDU~1/include -I$(ARDUINO_ROOT)/hardware/tools/avr/avr/include/avr -IC:/PROGRA~3/MATLAB/SUPPOR~1/R2021b/toolbox/target/shared/EXTERN~1/include
+INCLUDES_BUILDINFO = -I$(START_DIR) -IC:/PROGRA~3/MATLAB/SUPPOR~1/R2021b/toolbox/target/SUPPOR~1/ARDUIN~2/include -IC:/PROGRA~3/MATLAB/SUPPOR~1/R2021b/toolbox/target/shared/svd/include -I$(START_DIR)/PID_DC_MotorControl_Enc_ert_rtw -I$(MATLAB_ROOT)/extern/include -I$(MATLAB_ROOT)/simulink/include -I$(MATLAB_ROOT)/rtw/c/src -I$(MATLAB_ROOT)/rtw/c/src/ext_mode/common -I$(MATLAB_ROOT)/rtw/c/ert -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/include -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/common -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/protocol/src -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/protocol/include -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/transport/include -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/transport/src -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/platform/include -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/platform/default -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/ext_mode/include -I$(MATLAB_ROOT)/toolbox/coder/xcp/src/target/ext_mode/src -I$(MATLAB_ROOT)/rtw/c/ext_mode/common -I$(MATLAB_ROOT)/toolbox/coder/rtiostream/src -I$(ARDUINO_SAM_ROOT)/hardware/sam/$(SAM_LIB_VERSION)/system/libsam -I$(ARDUINO_SAM_ROOT)/hardware/sam/$(SAM_LIB_VERSION)/system/CMSIS/CMSIS/Include -I$(ARDUINO_SAM_ROOT)/hardware/sam/$(SAM_LIB_VERSION)/system/CMSIS/Device/ATMEL -I$(ARDUINO_SAM_ROOT)/hardware/sam/$(SAM_LIB_VERSION)/cores/arduino -I$(ARDUINO_SAM_ROOT)/hardware/sam/$(SAM_LIB_VERSION)/cores/arduino/avr -I$(ARDUINO_SAM_ROOT)/hardware/sam/$(SAM_LIB_VERSION)/variants/arduino_due_x -IC:/PROGRA~3/MATLAB/SUPPOR~1/R2021b/toolbox/target/SUPPOR~1/ARDUIN~1/include -IC:/PROGRA~3/MATLAB/SUPPOR~1/R2021b/toolbox/target/SUPPOR~1/ARDUIN~1/SCHEDU~1/include -IC:/PROGRA~3/MATLAB/SUPPOR~1/R2021b/toolbox/target/shared/EXTERN~1/include -IC:/PROGRA~3/MATLAB/SUPPOR~1/R2021b/toolbox/target/SUPPOR~1/ARMCOR~1/SCHEDU~1/include -IC:/PROGRA~3/MATLAB/SUPPOR~1/R2021b/toolbox/target/SUPPOR~1/ARMCOR~1/xcp/include
 
 INCLUDES = $(INCLUDES_BUILDINFO)
 
@@ -202,10 +194,10 @@ INCLUDES = $(INCLUDES_BUILDINFO)
 ## DEFINES
 ###########################################################################
 
-DEFINES_ = -D__MW_TARGET_USE_HARDWARE_RESOURCES_H__ -DXCP_MAX_CTO_SIZE=32 -DXCP_MAX_DTO_SIZE=65532 -DXCP_MAX_ODT_ENTRY_SIZE=255 -DXCP_MAX_DAQ=65535 -DXCP_MIN_DAQ=0 -DXCP_MAX_EVENT_CHANNEL=128 -DXCP_ID_FIELD_TYPE=0 -DXCP_TIMESTAMP_SIZE=4 -DXCP_ADDRESS_GRANULARITY=XCP_ADDRESS_GRANULARITY_BYTE -DXCP_MEM_RESERVED_POOLS_TOTAL_SIZE=313 -DXCP_MEM_DAQ_RESERVED_POOL_BLOCKS_NUMBER=3 -DMW_TIMERID=5 -DMW_PRESCALAR=256 -DMW_TIMERCOUNT=64286 -DMW_SCHEDULERCOUNTER=1 -DARDUINO_NUM_SERIAL_PORTS=4 -D_RTT_BAUDRATE_SERIAL0_=9600 -D_RTT_BAUDRATE_SERIAL1_=9600 -D_RTT_BAUDRATE_SERIAL2_=9600 -D_RTT_BAUDRATE_SERIAL3_=9600 -D_RTT_ANALOG_REF_=0
+DEFINES_ = -D__MW_TARGET_USE_HARDWARE_RESOURCES_H__ -DXCP_MAX_CTO_SIZE=255 -DXCP_MAX_DTO_SIZE=65532 -DXCP_MAX_ODT_ENTRY_SIZE=255 -DXCP_MAX_DAQ=65535 -DXCP_MIN_DAQ=0 -DXCP_MAX_EVENT_CHANNEL=128 -DXCP_ID_FIELD_TYPE=0 -DXCP_TIMESTAMP_SIZE=4 -DXCP_ADDRESS_GRANULARITY=XCP_ADDRESS_GRANULARITY_BYTE -DXCP_MEM_RESERVED_POOLS_TOTAL_SIZE=855 -DXCP_MEM_DAQ_RESERVED_POOL_BLOCKS_NUMBER=3 -DMW_TIMERID=8 -DMW_TIMERCOUNT=13125 -DMW_SAM_CLOCKID=TC_CMR_TCCLKS_TIMER_CLOCK4 -DARDUINO_NUM_SERIAL_PORTS=4 -D_RTT_BAUDRATE_SERIAL0_=9600 -D_RTT_BAUDRATE_SERIAL1_=9600 -D_RTT_BAUDRATE_SERIAL2_=9600 -D_RTT_BAUDRATE_SERIAL3_=9600 -D_RTT_ANALOG_REF_=0
 DEFINES_BUILD_ARGS = -DCLASSIC_INTERFACE=0 -DALLOCATIONFCN=0 -DEXT_MODE=1 -DONESTEPFCN=1 -DTERMFCN=1 -DMULTI_INSTANCE_CODE=0 -DINTEGER_CODE=0 -DMT=0
 DEFINES_CUSTOM = 
-DEFINES_OPTS = -DXCP_EXTMODE_SIMULATION_TIME_IN_TICKS -DXCP_DAQ_SUPPORT -DXCP_CALIBRATION_SUPPORT -DXCP_TIMESTAMP_SUPPORT -DXCP_TIMESTAMP_BASED_ON_SIMULATION_TIME -DXCP_SET_MTA_SUPPORT -DXCP_MEM_DAQ_RESERVED_POOLS_NUMBER=2 -DEXTMODE_XCP_TRIGGER_SUPPORT -DEXTMODE_STATIC -DEXTMODE_STATIC_SIZE=2048 -DON_TARGET_WAIT_FOR_START=1 -DTID01EQ=1 -DXCP_MEM_BLOCK_1_SIZE=16 -DXCP_MEM_BLOCK_1_NUMBER=1 -DXCP_MEM_BLOCK_2_SIZE=32 -DXCP_MEM_BLOCK_2_NUMBER=1 -DXCP_MEM_BLOCK_3_SIZE=40 -DXCP_MEM_BLOCK_3_NUMBER=1
+DEFINES_OPTS = -DXCP_DAQ_SUPPORT -DXCP_CALIBRATION_SUPPORT -DXCP_TIMESTAMP_SUPPORT -DXCP_TIMESTAMP_BASED_ON_SIMULATION_TIME -DXCP_SET_MTA_SUPPORT -DXCP_MEM_DAQ_RESERVED_POOLS_NUMBER=2 -DEXTMODE_XCP_TRIGGER_SUPPORT -DEXTMODE_STATIC -DEXTMODE_STATIC_SIZE=24576 -DON_TARGET_WAIT_FOR_START=1 -DTID01EQ=1 -DXCP_MEM_BLOCK_1_SIZE=16 -DXCP_MEM_BLOCK_1_NUMBER=1 -DXCP_MEM_BLOCK_2_SIZE=32 -DXCP_MEM_BLOCK_2_NUMBER=1 -DXCP_MEM_BLOCK_3_SIZE=48 -DXCP_MEM_BLOCK_3_NUMBER=1
 DEFINES_SKIPFORSIL = -DXCP_CUSTOM_PLATFORM -DEXIT_FAILURE=1 -DEXTMODE_DISABLEPRINTF -DEXTMODE_DISABLETESTING -DEXTMODE_DISABLE_ARGS_PROCESSING=1 -DSTACK_SIZE=64 -DRT
 DEFINES_STANDARD = -DMODEL=PID_DC_MotorControl_Enc -DNUMST=2 -DNCSTATES=1 -DHAVESTDIO -DMODEL_HAS_DYNAMICALLY_LOADED_SFCNS=0
 
@@ -215,7 +207,7 @@ DEFINES = $(DEFINES_) $(DEFINES_BUILD_ARGS) $(DEFINES_CUSTOM) $(DEFINES_OPTS) $(
 ## SOURCE FILES
 ###########################################################################
 
-SRCS = C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinobase/src/MW_ArduinoEncoder.cpp C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinobase/src/MW_arduino_digitalio.cpp C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinobase/src/MW_PWM.cpp C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinobase/src/MW_PWMDriver.c C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinobase/src/ArduinoPinHandleMap.cpp xcp_ext_mode.c $(START_DIR)/PID_DC_MotorControl_Enc_ert_rtw/PID_DC_MotorControl_Enc.c $(START_DIR)/PID_DC_MotorControl_Enc_ert_rtw/PID_DC_MotorControl_Enc_data.c $(START_DIR)/PID_DC_MotorControl_Enc_ert_rtw/rtGetInf.c $(START_DIR)/PID_DC_MotorControl_Enc_ert_rtw/rtGetNaN.c $(START_DIR)/PID_DC_MotorControl_Enc_ert_rtw/rt_nonfinite.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/ext_mode/src/xcp_ext_common.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/ext_mode/src/xcp_ext_classic_trigger.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/protocol/src/xcp.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/protocol/src/xcp_standard.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/protocol/src/xcp_daq.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/protocol/src/xcp_calibration.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/transport/src/xcp_fifo.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/transport/src/xcp_transport.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/platform/default/xcp_mem_default.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/platform/default/xcp_drv_rtiostream.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/transport/src/xcp_frame_serial.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/ext_mode/src/xcp_ext_param_default_serial.c C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinotarget/registry/../src/MW_ArduinoHWInit.cpp C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinobase/src/io_wrappers.cpp C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinotarget/registry/../scheduler/src/arduinoAVRScheduler.cpp C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinotarget/registry/../src/rtiostream_serial_daemon.cpp
+SRCS = C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinobase/src/MW_ArduinoEncoder.cpp C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinobase/src/MW_arduino_digitalio.cpp C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinobase/src/MW_PWM.cpp C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinobase/src/MW_PWMDriver.c C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinobase/src/ArduinoPinHandleMap.cpp xcp_ext_mode.c $(START_DIR)/PID_DC_MotorControl_Enc_ert_rtw/PID_DC_MotorControl_Enc.c $(START_DIR)/PID_DC_MotorControl_Enc_ert_rtw/PID_DC_MotorControl_Enc_data.c $(START_DIR)/PID_DC_MotorControl_Enc_ert_rtw/rtGetInf.c $(START_DIR)/PID_DC_MotorControl_Enc_ert_rtw/rtGetNaN.c $(START_DIR)/PID_DC_MotorControl_Enc_ert_rtw/rt_nonfinite.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/ext_mode/src/xcp_ext_common.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/ext_mode/src/xcp_ext_classic_trigger.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/protocol/src/xcp.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/protocol/src/xcp_standard.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/protocol/src/xcp_daq.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/protocol/src/xcp_calibration.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/transport/src/xcp_fifo.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/transport/src/xcp_transport.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/platform/default/xcp_mem_default.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/platform/default/xcp_drv_rtiostream.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/transport/src/xcp_frame_serial.c $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/ext_mode/src/xcp_ext_param_default_serial.c C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinotarget/registry/../scheduler/src/arm_m3_cortex_handler.c C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinotarget/registry/../src/MW_ArduinoHWInit.cpp C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinobase/src/io_wrappers.cpp C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinotarget/registry/../scheduler/src/arduinoARMScheduler.cpp C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/armcortexmbase/scheduler/src/m3m4m4f_multitasking.c C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinotarget/registry/../src/rtiostream_serial_daemon.cpp C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/armcortexmbase/xcp/src/sys_arch.c
 
 MAIN_SRC = $(START_DIR)/PID_DC_MotorControl_Enc_ert_rtw/ert_main.c
 
@@ -225,7 +217,7 @@ ALL_SRCS = $(SRCS) $(MAIN_SRC)
 ## OBJECTS
 ###########################################################################
 
-OBJS = MW_ArduinoEncoder.o MW_arduino_digitalio.o MW_PWM.o MW_PWMDriver.o ArduinoPinHandleMap.o xcp_ext_mode.o PID_DC_MotorControl_Enc.o PID_DC_MotorControl_Enc_data.o rtGetInf.o rtGetNaN.o rt_nonfinite.o xcp_ext_common.o xcp_ext_classic_trigger.o xcp.o xcp_standard.o xcp_daq.o xcp_calibration.o xcp_fifo.o xcp_transport.o xcp_mem_default.o xcp_drv_rtiostream.o xcp_frame_serial.o xcp_ext_param_default_serial.o MW_ArduinoHWInit.o io_wrappers.o arduinoAVRScheduler.o rtiostream_serial_daemon.o
+OBJS = MW_ArduinoEncoder.o MW_arduino_digitalio.o MW_PWM.o MW_PWMDriver.o ArduinoPinHandleMap.o xcp_ext_mode.o PID_DC_MotorControl_Enc.o PID_DC_MotorControl_Enc_data.o rtGetInf.o rtGetNaN.o rt_nonfinite.o xcp_ext_common.o xcp_ext_classic_trigger.o xcp.o xcp_standard.o xcp_daq.o xcp_calibration.o xcp_fifo.o xcp_transport.o xcp_mem_default.o xcp_drv_rtiostream.o xcp_frame_serial.o xcp_ext_param_default_serial.o arm_m3_cortex_handler.o MW_ArduinoHWInit.o io_wrappers.o arduinoARMScheduler.o m3m4m4f_multitasking.o rtiostream_serial_daemon.o sys_arch.o
 
 MAIN_OBJ = ert_main.o
 
@@ -241,7 +233,7 @@ PREBUILT_OBJS =
 ## LIBRARIES
 ###########################################################################
 
-LIBS = $(SLIB_PATH)/MW_RebuildSrc_Core.o
+LIBS = $(SLIB_PATH)/MW_RebuildSrc_Core.o $(SLIB_PATH)/libcore.a
 
 ###########################################################################
 ## SYSTEM LIBRARIES
@@ -257,7 +249,7 @@ SYSTEM_LIBS =
 # C Compiler
 #---------------
 
-CFLAGS_SKIPFORSIL = -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO_AVR_MEGA2560 -DARDUINO_ARCH_AVR -D_RUNONTARGETHARDWARE_BUILD_ -D_ROTH_MEGA2560_ -DARDUINO_NUM_SERIAL_PORTS=4
+CFLAGS_SKIPFORSIL = -MD -mcpu=cortex-m3 -fpermissive -DF_CPU=84000000L -DARDUINO_SAM_DUE -DARDUINO_ARCH_SAM -D__SAM3X8E__ -mthumb -DUSB_VID=0x2341 -DUSB_PID=0x003e -DUSBCON -DUSB_MANUFACTURER=\""Unknown\"" -DUSB_PRODUCT=\""Arduino Due\"" -D_RUNONTARGETHARDWARE_BUILD_ -D_ROTH_DUE_ -DARDUINO_NUM_SERIAL_PORTS=4 -DARDUINO_ARM -DARDUINO_ARM_CORTEX_M3
 CFLAGS_BASIC = $(DEFINES) $(INCLUDES)
 
 CFLAGS += $(CFLAGS_SKIPFORSIL) $(CFLAGS_BASIC)
@@ -267,7 +259,7 @@ CFLAGS += $(CFLAGS_SKIPFORSIL) $(CFLAGS_BASIC)
 #-----------
 
 LDFLAGS_ = -L"$(SLIB_PATH)"
-LDFLAGS_SKIPFORSIL = -mmcu=atmega2560 
+LDFLAGS_SKIPFORSIL = -T$(ARDUINO_SAM_ROOT)/hardware/sam/$(SAM_LIB_VERSION)/variants/arduino_due_x/linker_scripts/gcc/flash.ld -mcpu=cortex-m3 -mthumb -Wl,--cref -Wl,--check-sections -Wl,--gc-sections -Wl,--entry=Reset_Handler -Wl,--unresolved-symbols=report-all -Wl,--warn-common -Wl,--warn-section-align -Wl,--warn-unresolved-symbols -Wl,--start-group -u _sbrk -u link -u _close -u _fstat -u _isatty -u _lseek -u _read -u _write -u _exit -u kill -u _getpid $(ARDUINO_SAM_ROOT)/hardware/sam/$(SAM_LIB_VERSION)/variants/arduino_due_x/libsam_sam3x8e_gcc_rel.a
 
 LDFLAGS += $(LDFLAGS_) $(LDFLAGS_SKIPFORSIL)
 
@@ -276,7 +268,7 @@ LDFLAGS += $(LDFLAGS_) $(LDFLAGS_SKIPFORSIL)
 #--------------------------
 
 SHAREDLIB_LDFLAGS_ = -L"$(SLIB_PATH)"
-SHAREDLIB_LDFLAGS_SKIPFORSIL = -mmcu=atmega2560 
+SHAREDLIB_LDFLAGS_SKIPFORSIL = -T$(ARDUINO_SAM_ROOT)/hardware/sam/$(SAM_LIB_VERSION)/variants/arduino_due_x/linker_scripts/gcc/flash.ld -mcpu=cortex-m3 -mthumb -Wl,--cref -Wl,--check-sections -Wl,--gc-sections -Wl,--entry=Reset_Handler -Wl,--unresolved-symbols=report-all -Wl,--warn-common -Wl,--warn-section-align -Wl,--warn-unresolved-symbols -Wl,--start-group -u _sbrk -u link -u _close -u _fstat -u _isatty -u _lseek -u _read -u _write -u _exit -u kill -u _getpid $(ARDUINO_SAM_ROOT)/hardware/sam/$(SAM_LIB_VERSION)/variants/arduino_due_x/libsam_sam3x8e_gcc_rel.a
 
 SHAREDLIB_LDFLAGS += $(SHAREDLIB_LDFLAGS_) $(SHAREDLIB_LDFLAGS_SKIPFORSIL)
 
@@ -284,7 +276,7 @@ SHAREDLIB_LDFLAGS += $(SHAREDLIB_LDFLAGS_) $(SHAREDLIB_LDFLAGS_SKIPFORSIL)
 # C++ Compiler
 #-----------------
 
-CPPFLAGS_SKIPFORSIL = -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO_AVR_MEGA2560 -DARDUINO_ARCH_AVR -D_RUNONTARGETHARDWARE_BUILD_ -D_ROTH_MEGA2560_ -DARDUINO_NUM_SERIAL_PORTS=4
+CPPFLAGS_SKIPFORSIL = -MD -mcpu=cortex-m3 -fpermissive -DF_CPU=84000000L -DARDUINO_SAM_DUE -DARDUINO_ARCH_SAM -D__SAM3X8E__ -mthumb -DUSB_VID=0x2341 -DUSB_PID=0x003e -DUSBCON -DUSB_MANUFACTURER=\""Unknown\"" -DUSB_PRODUCT=\""Arduino Due\"" -D_RUNONTARGETHARDWARE_BUILD_ -D_ROTH_DUE_ -DARDUINO_NUM_SERIAL_PORTS=4 -DARDUINO_ARM -DARDUINO_ARM_CORTEX_M3
 CPPFLAGS_BASIC = $(DEFINES) $(INCLUDES)
 
 CPPFLAGS += $(CPPFLAGS_SKIPFORSIL) $(CPPFLAGS_BASIC)
@@ -294,7 +286,7 @@ CPPFLAGS += $(CPPFLAGS_SKIPFORSIL) $(CPPFLAGS_BASIC)
 #---------------
 
 CPP_LDFLAGS_ = -L"$(SLIB_PATH)"
-CPP_LDFLAGS_SKIPFORSIL = -mmcu=atmega2560 
+CPP_LDFLAGS_SKIPFORSIL = -T$(ARDUINO_SAM_ROOT)/hardware/sam/$(SAM_LIB_VERSION)/variants/arduino_due_x/linker_scripts/gcc/flash.ld -mcpu=cortex-m3 -mthumb -Wl,--cref -Wl,--check-sections -Wl,--gc-sections -Wl,--entry=Reset_Handler -Wl,--unresolved-symbols=report-all -Wl,--warn-common -Wl,--warn-section-align -Wl,--warn-unresolved-symbols -Wl,--start-group -u _sbrk -u link -u _close -u _fstat -u _isatty -u _lseek -u _read -u _write -u _exit -u kill -u _getpid $(ARDUINO_SAM_ROOT)/hardware/sam/$(SAM_LIB_VERSION)/variants/arduino_due_x/libsam_sam3x8e_gcc_rel.a
 
 CPP_LDFLAGS += $(CPP_LDFLAGS_) $(CPP_LDFLAGS_SKIPFORSIL)
 
@@ -303,7 +295,7 @@ CPP_LDFLAGS += $(CPP_LDFLAGS_) $(CPP_LDFLAGS_SKIPFORSIL)
 #------------------------------
 
 CPP_SHAREDLIB_LDFLAGS_ = -L"$(SLIB_PATH)"
-CPP_SHAREDLIB_LDFLAGS_SKIPFORSIL = -mmcu=atmega2560 
+CPP_SHAREDLIB_LDFLAGS_SKIPFORSIL = -T$(ARDUINO_SAM_ROOT)/hardware/sam/$(SAM_LIB_VERSION)/variants/arduino_due_x/linker_scripts/gcc/flash.ld -mcpu=cortex-m3 -mthumb -Wl,--cref -Wl,--check-sections -Wl,--gc-sections -Wl,--entry=Reset_Handler -Wl,--unresolved-symbols=report-all -Wl,--warn-common -Wl,--warn-section-align -Wl,--warn-unresolved-symbols -Wl,--start-group -u _sbrk -u link -u _close -u _fstat -u _isatty -u _lseek -u _read -u _write -u _exit -u kill -u _getpid $(ARDUINO_SAM_ROOT)/hardware/sam/$(SAM_LIB_VERSION)/variants/arduino_due_x/libsam_sam3x8e_gcc_rel.a
 
 CPP_SHAREDLIB_LDFLAGS += $(CPP_SHAREDLIB_LDFLAGS_) $(CPP_SHAREDLIB_LDFLAGS_SKIPFORSIL)
 
@@ -349,15 +341,9 @@ postbuild : $(PRODUCT)
 	echo "### Invoking postbuild tool "Binary Converter" ..."
 	$(OBJCOPY) $(OBJCOPYFLAGS_BIN)
 	echo "### Done invoking postbuild tool."
-	echo "### Invoking postbuild tool "Hex Converter" ..."
-	$(OBJCOPY) $(OBJCOPYFLAGS_HEX)
-	echo "### Done invoking postbuild tool."
 
 
 download : postbuild
-	echo "### Invoking postbuild tool "Download" ..."
-	$(DOWNLOAD) $(DOWNLOAD_FLAGS)
-	echo "### Done invoking postbuild tool."
 
 
 execute : download
@@ -404,6 +390,18 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS) $(LIBS) $(MAIN_OBJ)
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
+%.o : %.cc
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : %.C
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : %.cxx
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
 %.o : $(RELATIVE_PATH_TO_ANCHOR)/%.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
@@ -417,6 +415,18 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS) $(LIBS) $(MAIN_OBJ)
 
 
 %.o : $(RELATIVE_PATH_TO_ANCHOR)/%.cpp
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(RELATIVE_PATH_TO_ANCHOR)/%.cc
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(RELATIVE_PATH_TO_ANCHOR)/%.C
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(RELATIVE_PATH_TO_ANCHOR)/%.cxx
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
@@ -436,6 +446,18 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS) $(LIBS) $(MAIN_OBJ)
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
+%.o : $(START_DIR)/%.cc
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(START_DIR)/%.C
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(START_DIR)/%.cxx
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
 %.o : C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinobase/src/%.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
@@ -449,6 +471,18 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS) $(LIBS) $(MAIN_OBJ)
 
 
 %.o : C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinobase/src/%.cpp
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinobase/src/%.cc
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinobase/src/%.C
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinobase/src/%.cxx
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
@@ -468,6 +502,18 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS) $(LIBS) $(MAIN_OBJ)
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
+%.o : $(START_DIR)/PID_DC_MotorControl_Enc_ert_rtw/%.cc
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(START_DIR)/PID_DC_MotorControl_Enc_ert_rtw/%.C
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(START_DIR)/PID_DC_MotorControl_Enc_ert_rtw/%.cxx
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
 %.o : $(MATLAB_ROOT)/rtw/c/src/%.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
@@ -481,6 +527,18 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS) $(LIBS) $(MAIN_OBJ)
 
 
 %.o : $(MATLAB_ROOT)/rtw/c/src/%.cpp
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(MATLAB_ROOT)/rtw/c/src/%.cc
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(MATLAB_ROOT)/rtw/c/src/%.C
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(MATLAB_ROOT)/rtw/c/src/%.cxx
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
@@ -500,6 +558,18 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS) $(LIBS) $(MAIN_OBJ)
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
+%.o : $(MATLAB_ROOT)/simulink/src/%.cc
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(MATLAB_ROOT)/simulink/src/%.C
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(MATLAB_ROOT)/simulink/src/%.cxx
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
 %.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/protocol/src/%.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
@@ -513,6 +583,18 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS) $(LIBS) $(MAIN_OBJ)
 
 
 %.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/protocol/src/%.cpp
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/protocol/src/%.cc
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/protocol/src/%.C
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/protocol/src/%.cxx
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
@@ -532,6 +614,18 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS) $(LIBS) $(MAIN_OBJ)
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
+%.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/transport/src/%.cc
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/transport/src/%.C
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/transport/src/%.cxx
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
 %.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/ext_mode/src/%.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
@@ -548,6 +642,18 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS) $(LIBS) $(MAIN_OBJ)
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
+%.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/ext_mode/src/%.cc
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/ext_mode/src/%.C
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/ext_mode/src/%.cxx
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
 %.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/platform/default/%.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
@@ -561,6 +667,18 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS) $(LIBS) $(MAIN_OBJ)
 
 
 %.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/platform/default/%.cpp
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/platform/default/%.cc
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/platform/default/%.C
+	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+%.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/slave/platform/default/%.cxx
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
@@ -656,6 +774,10 @@ xcp_ext_param_default_serial.o : $(MATLAB_ROOT)/toolbox/coder/xcp/src/target/ext
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
+arm_m3_cortex_handler.o : C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinotarget/registry/../scheduler/src/arm_m3_cortex_handler.c
+	$(CC) $(CFLAGS) -o "$@" "$<"
+
+
 MW_ArduinoHWInit.o : C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinotarget/registry/../src/MW_ArduinoHWInit.cpp
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
@@ -664,12 +786,20 @@ io_wrappers.o : C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supp
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
-arduinoAVRScheduler.o : C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinotarget/registry/../scheduler/src/arduinoAVRScheduler.cpp
+arduinoARMScheduler.o : C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinotarget/registry/../scheduler/src/arduinoARMScheduler.cpp
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+m3m4m4f_multitasking.o : C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/armcortexmbase/scheduler/src/m3m4m4f_multitasking.c
+	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
 rtiostream_serial_daemon.o : C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/arduinotarget/registry/../src/rtiostream_serial_daemon.cpp
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
+
+
+sys_arch.o : C:/ProgramData/MATLAB/SupportPackages/R2021b/toolbox/target/supportpackages/armcortexmbase/xcp/src/sys_arch.c
+	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
 ###########################################################################
@@ -708,7 +838,6 @@ info :
 	echo "### MEX_LDFLAGS = $(MEX_LDFLAGS)"
 	echo "### MEX_CPPLDFLAGS = $(MEX_CPPLDFLAGS)"
 	echo "### OBJCOPYFLAGS_BIN = $(OBJCOPYFLAGS_BIN)"
-	echo "### OBJCOPYFLAGS_HEX = $(OBJCOPYFLAGS_HEX)"
 	echo "### DOWNLOAD_FLAGS = $(DOWNLOAD_FLAGS)"
 	echo "### EXECUTE_FLAGS = $(EXECUTE_FLAGS)"
 	echo "### MAKE_FLAGS = $(MAKE_FLAGS)"
