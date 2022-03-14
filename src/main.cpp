@@ -1,20 +1,15 @@
 #include <Arduino.h>
 #include "wheelEncoder.h"
+#include "PID.hpp"
 
 // PID Control parameters
 const float KP = 5.75;    // Proportional Feedback
 const float KI = 7;       // Integral Feedback
 const float KD = 0.02;    // Derivative feedback
+PID controlWheelA = PID(KP, KI, KD, -255, 255, 20);
+PID controlWheelB = PID(KP, KI, KD, -255, 255, 20);
 
-//Current and past error values i.e e(n) and e(n-1) for Motors A and B
-float errorA(0), errorB(0);
-float oldErrorA(0), oldErrorB(0);
-//Control signal
-float conA(0), conB(0);   
-//"Integral" of current and past error values of Motors A and Motors B
-float errorAIntegral(0), errorBIntegral(0);
-//"Derivative" of current and previous error values of Motors A and Motors B
-float errorADerivative(0), errorBDerivative(0);
+
 //Error Detection bytes
 const int START_BYTE_SPEED = 'a';
 const int END_BYTE_SPEED = 'b';
@@ -47,7 +42,6 @@ int getRot_BT(int num);
 void printFromPort(int printErrors = 0, int printRPMs = 1, int printControlSignals = 0);
 void printFromBT(int printErrors = 0, int printRPMs = 1, int printControlSignals = 0);
 
-void saturateControlInput();
 void applyControlInput();
 
 
@@ -70,8 +64,12 @@ void setup() {
   // Set initial rotation direction
   setMotorAForward();
   setMotorBForward();
+  controlWheelA.setDelayTime(20);
+  controlWheelB.setDelayTime(20);
   //Initialize the Motor Encoders
   EncoderInit();
+
+  
   speedA = 0; speedB = 0; speed = 0;
   rpmA = 0; rpmB = 0;
 
@@ -168,8 +166,6 @@ void loop() {
     }// end if statement -- PHONEBLUETOOTH
   }
   
-  
-
   float v = speed*2*PI*R/60; //convert speed (rpm) to (m/s)
   float omega = rotSpeed*PI/180; //convert (deg/s) to (rad/s)
 
@@ -181,30 +177,14 @@ void loop() {
   speedA = 60*vl/(2*PI);// convert rads/s to RPM
   speedB = 60*vr/(2*PI);
 
-  
-  //e(t)
-  errorA = speedA - rpmA; 
-  errorB = speedB - rpmB;
-  
-  errorAIntegral = errorAIntegral + delayTime*errorA/1000.0;
-  errorBIntegral = errorBIntegral + delayTime*errorB/1000.0;
-
-  errorADerivative = 1000.0*(errorA-oldErrorA)/delayTime;
-  errorBDerivative = 1000.0*(errorB-oldErrorB)/delayTime;
-  if(speed == 0 && rotSpeed == 0){
-    errorAIntegral = 0; errorADerivative = 0;
-    errorBIntegral = 0; errorBDerivative = 0;
+  if(speedA == 0 && speedB == 0){
+    controlWheelA.setErrorInt_DerToZero();
+    controlWheelB.setErrorInt_DerToZero();
   }
-
-  //u(t)
-  conA = KP*errorA + KI*errorAIntegral + KD*errorADerivative;
-  conB = KP*errorB + KI*errorBIntegral + KD*errorBDerivative;
-
-  oldErrorA = errorA;
-  oldErrorB = errorB;
+  controlWheelA.calcControl(speedA, rpmA);
+  controlWheelB.calcControl(speedB, rpmB);
   
   // Saturate control signal if it goes above/below the largest value for analogWrite
-  saturateControlInput();
   applyControlInput();
 
   rpmA = (durationA/(float)Pulses_Per_Rotation)*60*mills/delayTime;
@@ -214,7 +194,7 @@ void loop() {
  
   //if(digitalRead(serialPort)==HIGH) ---Commented out because I want to be able to plot speed even when connected to Phone
   //{
-    printFromPort(0, 1, 0);
+    printFromPort(0, 1, 1);
   //}
 
   if(digitalRead(phoneBluetooth)==HIGH)
@@ -452,10 +432,10 @@ int getRot_BT(int num){
 void printFromPort(int printErrors, int printRPMs, int printControlSignals){
   if(printErrors == 1){
     Serial.print("Error A: ");
-    Serial.print(errorA);
+    Serial.print(controlWheelA.getError());
     Serial.print(",");
     Serial.print("Error B: ");
-    Serial.print(errorB);
+    Serial.print(controlWheelB.getError());
     Serial.print(",");
   }
   
@@ -470,10 +450,10 @@ void printFromPort(int printErrors, int printRPMs, int printControlSignals){
   
   if(printControlSignals == 1){
     Serial.print("Control A: ");
-    Serial.print(conA);
+    Serial.print(controlWheelA.getControl());
     Serial.print(",");
     Serial.print("Control B: ");
-    Serial.print(conB);
+    Serial.print(controlWheelB.getControl());
     Serial.print(",");
   }
 
@@ -503,10 +483,10 @@ void printFromPort(int printErrors, int printRPMs, int printControlSignals){
 void printFromBT(int printErrors, int printRPMs, int printControlSignals){
   if(printErrors == 1){
     Serial1.print("Error A: ");
-    Serial1.print(errorA);
+    Serial1.print(controlWheelA.getError());
     Serial1.print(",");
     Serial1.print("Error B: ");
-    Serial1.print(errorB);
+    Serial1.print(controlWheelB.getError());
     Serial1.print(",");
   }
   
@@ -521,10 +501,10 @@ void printFromBT(int printErrors, int printRPMs, int printControlSignals){
   
   if(printControlSignals == 1){
     Serial1.print("Control A: ");
-    Serial1.print(conA);
+    Serial1.print(controlWheelA.getControl());
     Serial1.print(",");
     Serial1.print("Control B: ");
-    Serial1.print(conB);
+    Serial1.print(controlWheelB.getControl());
     Serial1.print(",");
   }
   
@@ -541,29 +521,18 @@ void printFromBT(int printErrors, int printRPMs, int printControlSignals){
 }
 
 
-void saturateControlInput(){
-   if(conA > 255)
-    conA = 255;
-  else if(conA < -255)
-    conA = -255;
-  if(conB > 255)
-    conB = 255;
-  else if(conB < -255)
-    conB = -255;
-}
-
 void applyControlInput(){
-  if(conA < 0)
+  if(controlWheelA.getControl() < 0)
     setMotorAReverse();
-  else if(conA > 0)
+  else if(controlWheelA.getControl() > 0)
     setMotorAForward();
 
-  if(conB < 0)
+  if(controlWheelB.getControl() < 0)
     setMotorBReverse();
-  else if(conB > 0)
+  else if(controlWheelB.getControl()> 0)
     setMotorBForward();
 
-  analogWrite(enA, fabs(conA));
-  analogWrite(enB, fabs(conB));
+  analogWrite(enA, fabs(controlWheelA.getControl()));
+  analogWrite(enB, fabs(controlWheelB.getControl()));
 }
 
