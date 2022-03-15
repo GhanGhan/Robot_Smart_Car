@@ -11,37 +11,37 @@ const float KD = 0.02;    // Derivative feedback
 
 const int delayTime = 20;
 const int mills = 1000;
-PID controlWheelA = PID(KP, KI, KD, -255, 255, delayTime);
-PID controlWheelB = PID(KP, KI, KD, -255, 255, delayTime);
+PID controlWheelLeft = PID(KP, KI, KD, -255, 255, delayTime);
+PID controlWheelRight = PID(KP, KI, KD, -255, 255, delayTime);
 
 //MOTOR CONTROL PARAMETERS
 //PWM pins for MotorA and MotorB respectively.  They control the motor speed.
-const int enA = 10; //Enable A
-const int enB = 9;//Enable B
+const int enableLeft = 10; //Enable A
+const int enableRight = 9;//Enable B
 //Input Pins for MotorA and B.  They control the direction of the motors
 const int in1 = 5;//Inputs for Motor A
 const int in2 = 4;
 const int in3 = 7;//Inputs for Motor B
 const int in4 = 6;
-MotorDriver motorA = MotorDriver(in1, in2, enA);
-MotorDriver motorB = MotorDriver(in3, in4, enB);
+MotorDriver motorA = MotorDriver(in1, in2, enableLeft);
+MotorDriver motorB = MotorDriver(in3, in4, enableRight);
 
 //ENCODER PARAMETERS
 const int Pulses_Per_Rotation = 1920;
 //Encoder Index
-const int encoder0 = 0;
-const int encoder1 = 1;
+const int encoderLeft = 0;
+const int encoderRight = 1;
 //Encoder pins for Motor A
-const int enc0A = 2;//A Pin -> the interrupt pin 0
-const int enc0B = 8;//B Pin
+const int encoderLeftA = 2;//A Pin -> the interrupt pin 0
+const int encoderLeftB = 8;//B Pin
 //Encoder pins for Motor B
-const int enc1A = 3;//A Pin -> the interrupt pin 0
-const int enc1B = 11;//B Pin
-Encoder encoderWheel0 = Encoder(enc0A, enc0B, Pulses_Per_Rotation, delayTime);
-Encoder encoderWheel1 = Encoder(enc1A, enc1B, Pulses_Per_Rotation, delayTime);
+const int encoderRightA = 3;//A Pin -> the interrupt pin 0
+const int encoderRightB = 11;//B Pin
+Encoder encoderWheelL = Encoder(encoderLeftA, encoderLeftB, Pulses_Per_Rotation, delayTime);
+Encoder encoderWheelR = Encoder(encoderRightA, encoderRightB, Pulses_Per_Rotation, delayTime);
 
-float speedA, speedB, speed;
-float rpmA, rpmB;
+float speedLeft, speedRight, speed;
+float rpmL, rpmR;
 
 float rotSpeed, actualRotSpeed;
 
@@ -59,10 +59,12 @@ const int phoneBluetooth = 52;  //checks if have signal to connect to phone via 
 const int serialPort = 53;      //checks if have signal to connect to a serial port via bluetooth or USB
 
 
+void unicycleToDerivative();
+void applyControlInput();
 void printFromPort(int printErrors = 0, int printRPMs = 1, int printControlSignals = 0);
 void printFromBT(int printErrors = 0, int printRPMs = 1, int printControlSignals = 0);
 
-void applyControlInput();
+
 
 
 void setup() {
@@ -81,12 +83,12 @@ void setup() {
   motorA.setMotorForward();
   motorB.setMotorForward();
   //Initialize the Motor Encoders
-  encoderWheel0.EncoderInit(encoder0, 0);
-  encoderWheel1.EncoderInit(encoder1, 0);
+  encoderWheelL.EncoderInit(encoderLeft, 0);
+  encoderWheelR.EncoderInit(encoderRight, 0);
 
   
-  speedA = 0; speedB = 0; speed = 0;
-  rpmA = 0; rpmB = 0;
+  speedLeft = 0; speedRight = 0; speed = 0;
+  rpmL = 0; rpmR = 0;
   rotSpeed = 0;
   actualRotSpeed = 0;
 
@@ -97,10 +99,10 @@ void loop() {
   /*
   if(speed < 130){
     speed += 2;
-    speedA = speed;
-    speedB = speed;
-    analogWrite(enA, speedA);
-    analogWrite(enB, speedB);
+    speedLeft = speed;
+    speedRight = speed;
+    analogWrite(enableLeft, speedLeft);
+    analogWrite(enableRight, speedRight);
   }
   */
 
@@ -108,7 +110,7 @@ void loop() {
   /*
   float step = 0.2;
   speed = 130.0*sin(step);
-  speedA = speed; speedB = speed;
+  speedLeft = speed; speedRight = speed;
   step = step+0.2;
   */
   
@@ -121,7 +123,7 @@ void loop() {
   { 
     speed = getSpeed_Port(num, recievedVal);
     //r(t)
-    speedA = speed; speedB = speed;
+    speedLeft = speed; speedRight = speed;
     Serial.read();
   }// end=if statement -- SERIALPORT
 
@@ -131,14 +133,9 @@ void loop() {
     rotSpeed = getRot_Port(num, recievedVal);
     Serial.read();
   }
-  
-  
-    
   ///---------------FOR BLUETOOTH CONNECTION!!!!!!!
   int num1 = Serial1.available();
   int recievedValBT = Serial1.read();
-
-
   if(num1 > 0 && digitalRead(phoneBluetooth)==HIGH )
   {
     if(recievedValBT == START_BYTE_SPEED)
@@ -168,31 +165,22 @@ void loop() {
     }// end if statement -- PHONEBLUETOOTH
   }
   
-  float v = speed*2*PI*R/60; //convert speed (rpm) to (m/s)
-  float omega = rotSpeed*PI/180; //convert (deg/s) to (rad/s)
+  unicycleToDerivative(); // calculate desired left and right wheel speeds from robot linear and angular speeds
 
-  float vl(0), vr(0);
-
-  vr = (2*v+omega*L)/(2*R);//convert (m/s) to (rad/s)
-  vl = (2*v-omega*L)/(2*R);
-
-  speedA = 60*vl/(2*PI);// convert rads/s to RPM
-  speedB = 60*vr/(2*PI);
-
-  if(speedA == 0 && speedB == 0){
-    controlWheelA.setErrorInt_DerToZero();
-    controlWheelB.setErrorInt_DerToZero();
+  if(speedLeft == 0 && speedRight == 0){
+    controlWheelLeft.setErrorInt_DerToZero();
+    controlWheelRight.setErrorInt_DerToZero();
   }
-  controlWheelA.calcControl(speedA, rpmA);
-  controlWheelB.calcControl(speedB, rpmB);
+  controlWheelLeft.calcControl(speedLeft, rpmL);
+  controlWheelRight.calcControl(speedRight, rpmR);
   
   // Saturate control signal if it goes above/below the largest value for analogWrite
   applyControlInput();
 
-  rpmA = encoderWheel0.getRPM();
-  rpmB = encoderWheel1.getRPM();
+  rpmL = encoderWheelL.getRPM();
+  rpmR = encoderWheelR.getRPM();
 
-  actualRotSpeed = (rpmB-rpmA)*1.5;
+  actualRotSpeed = (rpmR-rpmL)*1.5;
  
   //if(digitalRead(serialPort)==HIGH) ---Commented out because I want to be able to plot speed even when connected to Phone
   //{
@@ -205,37 +193,57 @@ void loop() {
   }
   
 
-  encoderWheel0.setPulsesToZeros();
-  encoderWheel1.setPulsesToZeros();
+  encoderWheelL.setPulsesToZeros();
+  encoderWheelR.setPulsesToZeros();
 
   delay(delayTime);
 }// END PROGRAM LOOP
 
+void unicycleToDerivative()
+{
+  float v = speed*2*PI*R/60; //convert speed (rpm) to (m/s)
+  float omega = rotSpeed*PI/180; //convert (deg/s) to (rad/s)
+
+  float vl(0), vr(0);
+
+  vr = (2*v+omega*L)/(2*R);//convert (m/s) to (rad/s)
+  vl = (2*v-omega*L)/(2*R);
+
+  speedLeft = 60*vl/(2*PI);// convert rads/s to RPM
+  speedRight = 60*vr/(2*PI);
+}
+
+void applyControlInput(){
+  motorA.applyControlInput(controlWheelLeft.getControl());
+  motorB.applyControlInput(controlWheelRight.getControl());
+}
+
+
 void printFromPort(int printErrors, int printRPMs, int printControlSignals){
   if(printErrors == 1){
     Serial.print("Error A: ");
-    Serial.print(controlWheelA.getError());
+    Serial.print(controlWheelLeft.getError());
     Serial.print(",");
     Serial.print("Error B: ");
-    Serial.print(controlWheelB.getError());
+    Serial.print(controlWheelRight.getError());
     Serial.print(",");
   }
   
   if(printRPMs == 1){
-    Serial.print("RpmA: ");
-    Serial.print(rpmA);
+    Serial.print("RpmL: ");
+    Serial.print(rpmL);
     Serial.print(",");
-    Serial.print(" Rpm B: ");
-    Serial.print(rpmB);
+    Serial.print(" RpmR: ");
+    Serial.print(rpmR);
     Serial.print(",");
   }
   
   if(printControlSignals == 1){
-    Serial.print("Control A: ");
-    Serial.print(controlWheelA.getControl());
+    Serial.print("Control L: ");
+    Serial.print(controlWheelLeft.getControl());
     Serial.print(",");
-    Serial.print("Control B: ");
-    Serial.print(controlWheelB.getControl());
+    Serial.print("Control R: ");
+    Serial.print(controlWheelRight.getControl());
     Serial.print(",");
   }
 
@@ -248,12 +256,12 @@ void printFromPort(int printErrors, int printRPMs, int printControlSignals){
   Serial.print(actualRotSpeed);
   Serial.print(",");
 
-  Serial.print(" SpeedA: ");
-  Serial.print(speedA);
+  Serial.print(" SpeedL: ");
+  Serial.print(speedLeft);
   Serial.print(",");
 
-  Serial.print(" SpeedB: ");
-  Serial.print(speedB);
+  Serial.print(" SpeedR: ");
+  Serial.print(speedRight);
   Serial.print(",");
   
   
@@ -265,28 +273,28 @@ void printFromPort(int printErrors, int printRPMs, int printControlSignals){
 void printFromBT(int printErrors, int printRPMs, int printControlSignals){
   if(printErrors == 1){
     Serial1.print("Error A: ");
-    Serial1.print(controlWheelA.getError());
+    Serial1.print(controlWheelLeft.getError());
     Serial1.print(",");
     Serial1.print("Error B: ");
-    Serial1.print(controlWheelB.getError());
+    Serial1.print(controlWheelRight.getError());
     Serial1.print(",");
   }
   
   if(printRPMs == 1){
     Serial1.print("Left: ");
-    Serial1.print(rpmA);
+    Serial1.print(rpmL);
     Serial1.print(",");
     Serial1.print(" Right: ");
-    Serial1.print(rpmB);
+    Serial1.print(rpmR);
     Serial1.print(",");
   }
   
   if(printControlSignals == 1){
-    Serial1.print("Control A: ");
-    Serial1.print(controlWheelA.getControl());
+    Serial1.print("Control L: ");
+    Serial1.print(controlWheelLeft.getControl());
     Serial1.print(",");
-    Serial1.print("Control B: ");
-    Serial1.print(controlWheelB.getControl());
+    Serial1.print("Control R: ");
+    Serial1.print(controlWheelRight.getControl());
     Serial1.print(",");
   }
   
@@ -303,8 +311,4 @@ void printFromBT(int printErrors, int printRPMs, int printControlSignals){
 }
 
 
-void applyControlInput(){
-  motorA.applyControlInput(controlWheelA.getControl());
-  motorB.applyControlInput(controlWheelB.getControl());
-}
 
