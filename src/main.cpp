@@ -1,13 +1,48 @@
 #include <Arduino.h>
-#include "wheelEncoder.h"
-#include "PID.hpp"
+#include "PID.h"
+#include "MotorDriver.h"
+#include "Encoder.h"
 
-// PID Control parameters
+// PID CONTROL PARAMETERS
 const float KP = 5.75;    // Proportional Feedback
 const float KI = 7;       // Integral Feedback
 const float KD = 0.02;    // Derivative feedback
-PID controlWheelA = PID(KP, KI, KD, -255, 255, 20);
-PID controlWheelB = PID(KP, KI, KD, -255, 255, 20);
+
+const int delayTime = 20;
+const int mills = 1000;
+PID controlWheelA = PID(KP, KI, KD, -255, 255, delayTime);
+PID controlWheelB = PID(KP, KI, KD, -255, 255, delayTime);
+
+//MOTOR CONTROL PARAMETERS
+//PWM pins for MotorA and MotorB respectively.  They control the motor speed.
+const int enA = 10; //Enable A
+const int enB = 9;//Enable B
+//Input Pins for MotorA and B.  They control the direction of the motors
+const int in1 = 5;//Inputs for Motor A
+const int in2 = 4;
+const int in3 = 7;//Inputs for Motor B
+const int in4 = 6;
+MotorDriver motorA = MotorDriver(in1, in2, enA);
+MotorDriver motorB = MotorDriver(in3, in4, enB);
+
+//ENCODER PARAMETERS
+const int Pulses_Per_Rotation = 1920;
+//Encoder Index
+const int encoder0 = 0;
+const int encoder1 = 1;
+//Encoder pins for Motor A
+const int enc0A = 2;//A Pin -> the interrupt pin 0
+const int enc0B = 8;//B Pin
+//Encoder pins for Motor A
+const int enc1A = 2;//A Pin -> the interrupt pin 0
+const int enc1B = 8;//B Pin
+Encoder encoderWheel0 = Encoder(enc0A, enc0B, Pulses_Per_Rotation, delayTime);
+Encoder encoderWheel1 = Encoder(enc1A, enc1B, Pulses_Per_Rotation, delayTime);
+
+float speedA, speedB, speed;
+float rpmA, rpmB;
+
+float rotSpeed, actualRotSpeed;
 
 
 //Error Detection bytes
@@ -51,27 +86,24 @@ void setup() {
   Serial1.begin(115200);
   pinMode( 18, INPUT_PULLUP );
   pinMode( 19, INPUT_PULLUP );
-  //Set up Motor Driver EN (PWM) and INPUT pins for motor A and B
-  pinMode(enA, OUTPUT);
-  pinMode(in1, OUTPUT);
-  pinMode(in2, OUTPUT);
-  pinMode(enB, OUTPUT);
-  pinMode(in3, OUTPUT);
-  pinMode(in4, OUTPUT);
+
+  motorA.mdInit();
+  motorB.mdInit();
   //Communication Source
   pinMode(phoneBluetooth, INPUT);
   pinMode(serialPort, INPUT);
   // Set initial rotation direction
-  setMotorAForward();
-  setMotorBForward();
-  controlWheelA.setDelayTime(20);
-  controlWheelB.setDelayTime(20);
+  motorA.setMotorForward();
+  motorB.setMotorForward();
   //Initialize the Motor Encoders
-  EncoderInit();
+  encoderWheel0.EncoderInit(encoder0, 0);
+  encoderWheel1.EncoderInit(encoder1, 0);
 
   
   speedA = 0; speedB = 0; speed = 0;
   rpmA = 0; rpmB = 0;
+  rotSpeed = 0;
+  actualRotSpeed = 0;
 
 }
 
@@ -187,8 +219,8 @@ void loop() {
   // Saturate control signal if it goes above/below the largest value for analogWrite
   applyControlInput();
 
-  rpmA = (durationA/(float)Pulses_Per_Rotation)*60*mills/delayTime;
-  rpmB = (durationB/(float)Pulses_Per_Rotation)*60*mills/delayTime;
+  rpmA = encoderWheel0.getRPM();
+  rpmB = encoderWheel1.getRPM();
 
   actualRotSpeed = (rpmB-rpmA)*1.5;
  
@@ -201,9 +233,9 @@ void loop() {
   {
     printFromBT(0, 1, 0);
   }
-  
-  durationA = 0;
-  durationB = 0;
+
+  encoderWheel0.setPulsesToZeros();
+  encoderWheel1.setPulsesToZeros();
 
   delay(delayTime);
 }// end loop
@@ -522,17 +554,7 @@ void printFromBT(int printErrors, int printRPMs, int printControlSignals){
 
 
 void applyControlInput(){
-  if(controlWheelA.getControl() < 0)
-    setMotorAReverse();
-  else if(controlWheelA.getControl() > 0)
-    setMotorAForward();
-
-  if(controlWheelB.getControl() < 0)
-    setMotorBReverse();
-  else if(controlWheelB.getControl()> 0)
-    setMotorBForward();
-
-  analogWrite(enA, fabs(controlWheelA.getControl()));
-  analogWrite(enB, fabs(controlWheelB.getControl()));
+  motorA.applyControlInput(controlWheelA.getControl());
+  motorB.applyControlInput(controlWheelB.getControl());
 }
 

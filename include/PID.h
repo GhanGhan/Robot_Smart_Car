@@ -1,5 +1,5 @@
-#ifndef _PID_hpp
-#define _PID_hpp
+#ifndef _PID_h
+#define _PID_h
 
 class PID
 {
