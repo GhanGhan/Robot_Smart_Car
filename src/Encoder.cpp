@@ -1,7 +1,7 @@
 #include "Arduino.h"
 #include "Encoder.h"
 
-Encoder * Encoder::myInstance[MAX_WHEELS] = {nullptr, nullptr};
+Encoder * Encoder::myInstance[MAX_WHEELS] = {NULL, NULL};
 
 Encoder::Encoder()
 {}
@@ -9,7 +9,7 @@ Encoder::Encoder()
 Encoder::~Encoder()
 {
     detachInterrupt(digitalPinToInterrupt(encoderPinA_Int));
-    myInstance[wheelID] = nullptr;
+    myInstance[wheelID] = NULL;
 }
 
 
@@ -46,7 +46,7 @@ void Encoder::EncoderInit(int wheelNumber, int type)
     direction = true;
     pinMode(encoderPinB, INPUT);
     wheelID = wheelNumber;
-    if(myInstance[wheelID] == nullptr)
+    if(myInstance[wheelID] == NULL)
     {
         myInstance[wheelID] = this;
         switch(wheelID){
@@ -69,6 +69,7 @@ void Encoder::EncoderInit(int wheelNumber, int type)
 void Encoder::wheelSpeed()
 {
     int currentA = digitalRead(encoderPinA_Int);
+    
     if(wheelID == 0)
     {
         if((previous_A == LOW) && currentA==HIGH)//only checking direction when A1 rises from LOW to HIGH

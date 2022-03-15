@@ -33,9 +33,9 @@ const int encoder1 = 1;
 //Encoder pins for Motor A
 const int enc0A = 2;//A Pin -> the interrupt pin 0
 const int enc0B = 8;//B Pin
-//Encoder pins for Motor A
-const int enc1A = 2;//A Pin -> the interrupt pin 0
-const int enc1B = 8;//B Pin
+//Encoder pins for Motor B
+const int enc1A = 3;//A Pin -> the interrupt pin 0
+const int enc1B = 11;//B Pin
 Encoder encoderWheel0 = Encoder(enc0A, enc0B, Pulses_Per_Rotation, delayTime);
 Encoder encoderWheel1 = Encoder(enc1A, enc1B, Pulses_Per_Rotation, delayTime);
 
@@ -233,6 +233,7 @@ void loop() {
   {
     printFromBT(0, 1, 0);
   }
+  
 
   encoderWheel0.setPulsesToZeros();
   encoderWheel1.setPulsesToZeros();
