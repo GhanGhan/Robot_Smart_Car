@@ -160,6 +160,11 @@ void loop() {
   {  
     unicycleToDerivative(); // calculate desired left and right wheel speeds from robot linear and angular speeds
 
+    //Get Current Velocities
+    rpmL = encoderWheelL.getRPM();
+    rpmR = encoderWheelR.getRPM();
+    actualRotSpeed = (rpmR-rpmL)*1.5;
+    
     if(speedLeft == 0 && speedRight == 0){
       controlWheelLeft.setErrorInt_DerToZero();
       controlWheelRight.setErrorInt_DerToZero();
@@ -170,10 +175,7 @@ void loop() {
     // Saturate control signal if it goes above/below the largest value for analogWrite
     applyControlInput();
 
-    rpmL = encoderWheelL.getRPM();
-    rpmR = encoderWheelR.getRPM();
-
-    actualRotSpeed = (rpmR-rpmL)*1.5;
+    
   
     //if(digitalRead(serialPort)==HIGH) ---Commented out because I want to be able to plot speed even when connected to Phone
     //{
@@ -297,14 +299,6 @@ void printFromBT(int printErrors, int printRPMs, int printControlSignals){
     Serial1.print(",");
   }
   
-  if(printRPMs == 1){
-    Serial1.print("Left: ");
-    Serial1.print(rpmL);
-    Serial1.print(",");
-    Serial1.print(" Right: ");
-    Serial1.print(rpmR);
-    Serial1.print(",");
-  }
   
   if(printControlSignals == 1){
     Serial1.print("Control L: ");
@@ -315,9 +309,23 @@ void printFromBT(int printErrors, int printRPMs, int printControlSignals){
     Serial1.print(",");
   }
   
-  Serial1.print(" Sent Speed: ");
-  Serial1.print(speed);
-  Serial1.println();
+  
+
+  if(printRPMs == 1){
+    Serial1.print("Sent Speed: ");
+    Serial1.print(speed);
+
+    /*
+    Serial1.print("Left: ");
+    Serial1.print(rpmL);
+    Serial1.print(",");
+    Serial1.print(" Right: ");
+    Serial1.print(rpmR);
+    Serial1.print(",");*/
+    float actualSpeed = (rpmL+rpmR)/2;
+    Serial1.print(" Actual: ");
+    Serial1.println(actualSpeed);
+  }
 
   Serial1.print("Sent DGS: ");
   Serial1.print(rotSpeed);
