@@ -4,13 +4,15 @@
 #include "Encoder.h"
 #include "SerialInputParsing.h"
 
+// TIME (INTERVAL) PARAMETERS 
+const int delayTime = 20;
+const int mills = 1000;
+
 // PID CONTROL PARAMETERS
 const float KP = 5.75;    // Proportional Feedback
 const float KI = 7;       // Integral Feedback
 const float KD = 0.02;    // Derivative feedback
 
-const int delayTime = 20;
-const int mills = 1000;
 PID controlWheelLeft = PID(KP, KI, KD, -255, 255, delayTime);
 PID controlWheelRight = PID(KP, KI, KD, -255, 255, delayTime);
 
@@ -23,8 +25,8 @@ const int in1 = 5;//Inputs for Motor A
 const int in2 = 4;
 const int in3 = 7;//Inputs for Motor B
 const int in4 = 6;
-MotorDriver motorA = MotorDriver(in1, in2, enableLeft);
-MotorDriver motorB = MotorDriver(in3, in4, enableRight);
+MotorDriver motorL = MotorDriver(in1, in2, enableLeft);
+MotorDriver motorR = MotorDriver(in3, in4, enableRight);
 
 //ENCODER PARAMETERS
 const int Pulses_Per_Rotation = 1920;
@@ -40,164 +42,179 @@ const int encoderRightB = 11;//B Pin
 Encoder encoderWheelL = Encoder(encoderLeftA, encoderLeftB, Pulses_Per_Rotation, delayTime);
 Encoder encoderWheelR = Encoder(encoderRightA, encoderRightB, Pulses_Per_Rotation, delayTime);
 
+//DESIRED AND ACTUAL SPEED VARIABLES
 float speedLeft, speedRight, speed;
 float rpmL, rpmR;
-
 float rotSpeed, actualRotSpeed;
 
 
-//Error Detection bytes
+//ERROR DETECTION BYTES
 const int START_BYTE_SPEED = 'a';
 const int END_BYTE_SPEED = 'b';
 const int START_BYTE_ROT = 'f';
 const int END_BYTE_ROT = 'g';
 
-const float R = 3.25;
-const float L = 13;
+//ROBOT DIMENSION VALUES (CM)
+const float R = 3.25; //RADIUS OF THE WHEEL
+const float L = 13;   //LENGTH OR ROBOT BASE
 
+//PORT VS BLUETOOTH CONTROL
 const int phoneBluetooth = 52;  //checks if have signal to connect to phone via bluetooth
 const int serialPort = 53;      //checks if have signal to connect to a serial port via bluetooth or USB
+enum controlState {BLUE, SPORT, UND};
 
-
+//SUPPLAMENTARY FUNCTIONS
+void getState(int &state);
 void unicycleToDerivative();
 void applyControlInput();
 void printFromPort(int printErrors = 0, int printRPMs = 1, int printControlSignals = 0);
 void printFromBT(int printErrors = 0, int printRPMs = 1, int printControlSignals = 0);
 
-
-
-
 void setup() {
   
   Serial.begin(115200);
   Serial1.begin(115200);
+  //Initialize Serial1 Port
   pinMode( 18, INPUT_PULLUP );
   pinMode( 19, INPUT_PULLUP );
-
-  motorA.mdInit();
-  motorB.mdInit();
   //Communication Source
   pinMode(phoneBluetooth, INPUT);
   pinMode(serialPort, INPUT);
+  //Initialize Motor driver
+  motorL.mdInit();
+  motorR.mdInit();
   // Set initial rotation direction
-  motorA.setMotorForward();
-  motorB.setMotorForward();
+  motorL.setMotorForward();
+  motorR.setMotorForward();
   //Initialize the Motor Encoders
   encoderWheelL.EncoderInit(encoderLeft, 0);
   encoderWheelR.EncoderInit(encoderRight, 0);
 
-  
   speedLeft = 0; speedRight = 0; speed = 0;
   rpmL = 0; rpmR = 0;
   rotSpeed = 0;
   actualRotSpeed = 0;
-
 }
 
 void loop() {
-  //Testing Ramp Input
-  /*
-  if(speed < 130){
-    speed += 2;
-    speedLeft = speed;
-    speedRight = speed;
-    analogWrite(enableLeft, speedLeft);
-    analogWrite(enableRight, speedRight);
-  }
-  */
-
-  //Testing Sinuisoidal Input
-  /*
-  float step = 0.2;
-  speed = 130.0*sin(step);
-  speedLeft = speed; speedRight = speed;
-  step = step+0.2;
-  */
-  
-  //////////%%%%%%%%%%% GET SPEED (cm/s) AND OMEGA (deg/second)
-  ///---------------FOR SERIAL PORT CONNECTION (USB/BLUETOOTH) CONNECTION!!!!!!!
-  //get speed value
+  int state;
+  getState(state);
   int num = Serial.available();
   int recievedVal = Serial.read();
-  if(num > 0  && digitalRead(serialPort)==HIGH && recievedVal != 'c')
-  { 
-    speed = getSpeed_Port(num, recievedVal);
-    //r(t)
-    speedLeft = speed; speedRight = speed;
-    Serial.read();
-  }// end=if statement -- SERIALPORT
-
-  //get rotation speed value
-  if(num > 0  && digitalRead(serialPort)==HIGH && recievedVal == 'c')
-  {
-    rotSpeed = getRot_Port(num, recievedVal);
-    Serial.read();
-  }
-  ///---------------FOR BLUETOOTH CONNECTION!!!!!!!
   int num1 = Serial1.available();
   int recievedValBT = Serial1.read();
-  if(num1 > 0 && digitalRead(phoneBluetooth)==HIGH )
-  {
-    if(recievedValBT == START_BYTE_SPEED)
-    {
-      int tempSpeed;
-      tempSpeed = getSpeed_BT(num1);
-      char dig = Serial1.read();
-      if(dig == END_BYTE_SPEED && tempSpeed <= 130 && tempSpeed >= -130){
-        speed = tempSpeed;
+  //////////%%%%%%%%%%% GET SPEED (cm/s) AND OMEGA (deg/second)
+  switch(state){
+    case BLUE:
+    ///---------------FOR BLUETOOTH CONNECTION!!!!!!!
+      if(num1 > 0)
+      {
+        if(recievedValBT == START_BYTE_SPEED)
+        {
+          int tempSpeed;
+          tempSpeed = getSpeed_BT(num1);
+          char dig = Serial1.read();
+          if(dig == END_BYTE_SPEED && tempSpeed <= 130 && tempSpeed >= -130){
+            speed = tempSpeed;
+          }
+          else{}
+          Serial1.read();//to get the carriage return byte
+        }// end if statement -- PHONEBLUETOOTH
+        
+        if(recievedValBT == START_BYTE_ROT)
+        {
+          int tempRot;
+          tempRot = getRot_BT(num1);
+          char dig = Serial1.read();
+          if(dig == END_BYTE_ROT && tempRot <= 360 && tempRot >= -360){
+            rotSpeed = tempRot;
+          }
+          else{}
+          Serial1.read();//to get the carriage return byte
+        }// end if statement -- PHONEBLUETOOTH
       }
-      else{}
-      Serial1.read();//to get the carriage return byte
-    }// end if statement -- PHONEBLUETOOTH
+      break;
+    case SPORT:
+    ///---------------FOR SERIAL PORT CONNECTION (USB/BLUETOOTH) CONNECTION!!!!!!!
+      if(num > 0 )
+      {
+        if(recievedVal != 'c')
+        {
+          speed = getSpeed_Port(num, recievedVal);
+          speedLeft = speed; speedRight = speed;
+          Serial.read();
+        }
+        else if(recievedVal == 'c')
+        {
+          rotSpeed = getRot_Port(num, recievedVal);
+          Serial.read();
+        }
+      }
+      break;
+    case UND:
+      Serial.println("Error Undefined State");
+      Serial1.println("Error Undefined State ");
+  }//end switch case
+
+  if(state == BLUE || state == SPORT)
+  {  
+    unicycleToDerivative(); // calculate desired left and right wheel speeds from robot linear and angular speeds
+
+    if(speedLeft == 0 && speedRight == 0){
+      controlWheelLeft.setErrorInt_DerToZero();
+      controlWheelRight.setErrorInt_DerToZero();
+    }
+    controlWheelLeft.calcControl(speedLeft, rpmL);
+    controlWheelRight.calcControl(speedRight, rpmR);
     
+    // Saturate control signal if it goes above/below the largest value for analogWrite
+    applyControlInput();
 
-    if(recievedValBT == START_BYTE_ROT)
+    rpmL = encoderWheelL.getRPM();
+    rpmR = encoderWheelR.getRPM();
+
+    actualRotSpeed = (rpmR-rpmL)*1.5;
+  
+    //if(digitalRead(serialPort)==HIGH) ---Commented out because I want to be able to plot speed even when connected to Phone
+    //{
+      printFromPort(0, 1, 1);
+    //}
+
+    if(digitalRead(phoneBluetooth)==HIGH)
     {
-      int tempRot;
-      tempRot = getRot_BT(num1);
-      char dig = Serial1.read();
-      if(dig == END_BYTE_ROT && tempRot <= 360 && tempRot >= -360){
-        rotSpeed = tempRot;
-
-      }
-      else{}
-      Serial1.read();//to get the carriage return byte
-    }// end if statement -- PHONEBLUETOOTH
+      printFromBT(0, 1, 0);
+    }
+    
+    encoderWheelL.setPulsesToZeros();
+    encoderWheelR.setPulsesToZeros();
   }
-  
-  unicycleToDerivative(); // calculate desired left and right wheel speeds from robot linear and angular speeds
-
-  if(speedLeft == 0 && speedRight == 0){
-    controlWheelLeft.setErrorInt_DerToZero();
-    controlWheelRight.setErrorInt_DerToZero();
+  else //state == UND
+  {//emergency stop
+    motorL.applyControlInput(0);
+    motorR.applyControlInput(0);
+    Serial.println("Error Undefined State");
+    Serial1.println("Error Undefined State ");
   }
-  controlWheelLeft.calcControl(speedLeft, rpmL);
-  controlWheelRight.calcControl(speedRight, rpmR);
-  
-  // Saturate control signal if it goes above/below the largest value for analogWrite
-  applyControlInput();
-
-  rpmL = encoderWheelL.getRPM();
-  rpmR = encoderWheelR.getRPM();
-
-  actualRotSpeed = (rpmR-rpmL)*1.5;
- 
-  //if(digitalRead(serialPort)==HIGH) ---Commented out because I want to be able to plot speed even when connected to Phone
-  //{
-    printFromPort(0, 1, 1);
-  //}
-
-  if(digitalRead(phoneBluetooth)==HIGH)
-  {
-    printFromBT(0, 1, 0);
-  }
-  
-
-  encoderWheelL.setPulsesToZeros();
-  encoderWheelR.setPulsesToZeros();
-
   delay(delayTime);
 }// END PROGRAM LOOP
+
+
+
+void getState(int &state)
+{
+  if(digitalRead(phoneBluetooth) == HIGH && digitalRead(serialPort) == LOW)
+  {
+    state = BLUE;
+  }
+  else if (digitalRead(phoneBluetooth) == LOW && digitalRead(serialPort) == HIGH)
+  {
+    state = SPORT;
+  }
+  else
+  {
+    state = UND;
+  }
+}
 
 void unicycleToDerivative()
 {
@@ -214,8 +231,8 @@ void unicycleToDerivative()
 }
 
 void applyControlInput(){
-  motorA.applyControlInput(controlWheelLeft.getControl());
-  motorB.applyControlInput(controlWheelRight.getControl());
+  motorL.applyControlInput(controlWheelLeft.getControl());
+  motorR.applyControlInput(controlWheelRight.getControl());
 }
 
 
