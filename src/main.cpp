@@ -323,7 +323,7 @@ void printFromBT(int printErrors, int printRPMs, int printControlSignals){
     Serial1.print(rpmR);
     Serial1.print(",");*/
     float actualSpeed = (rpmL+rpmR)/2;
-    Serial1.print(" Actual: ");
+    Serial1.print(" Actual Speed: ");
     Serial1.println(actualSpeed);
   }
 
