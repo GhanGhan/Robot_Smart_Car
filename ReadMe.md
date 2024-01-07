@@ -4,8 +4,7 @@ The robot car is a two-wheel differential-drive mobile robot.  The wheels are ac
 # Table of Contents
 1. Summary of Functionality
 2. Repository Structure
-3. Tech Stack
-4. Process Description
+3. Code Description
 5. License
 6. Acknowledgments
 
@@ -45,4 +44,16 @@ The robot car is a two-wheel differential-drive mobile robot.  The wheels are ac
 │   └── README
 └── platformio.ini
 ```
+# Code Description
+- **PID:**
+   - Calculates the control signal that should be sent to themtor drivers based on the error between the desired and current velocity of the motors
+- **Encoder:**
+   - Calculates the current speed of the motor and determines their rotational direction using inputs from the quadratue encoders
+- **MotorDriver:**
+   - Sends the control signals that sets the motors speed and rotation direction.  Also enables/disables them
+- **SerialInputParsing:**
+   - Determines the value of the velocity sent from the command source
+   - Contains error detection code to sense of the data is corrupted or not
+- The .h files contain the class, functions and data structure declarations
+- The .c files manipulate the member variables, usually by applying algorithms and/or logic of varying complexity
 
