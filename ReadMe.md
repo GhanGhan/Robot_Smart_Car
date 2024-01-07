@@ -1,10 +1,21 @@
-Summary
-The robot car is a two-wheel differential-drive mobile robot.  The wheels are actuated by TTL DC motors whose speed and direction are sensed using quadrature encoders.  The linear and angular speeds of the car can be sent over USB from a pc or over Bluetooth using the associated phone app.  In order to quickly get to and maintain the desired linear and angular speeds a PID control system was implemented.  An Arduino Mega is used as the microcontroller for the car.
-Features
-•	Hardware switch to change speed command source from associated phone app and pc with indicator lights
-•	Maximum linear speed set to 130 rpm, given wheel radius that is 44.24 cm/s
-•	Maximum rotation speed set to 200 deg/s
-•	Can see actual linear and angular velocity of the robot on the app
-•	App sends velocity commands with start and stop bits so that erroneous commands are ignored
+# Overview
+The robot car is a two-wheel differential-drive mobile robot.  The wheels are actuated by DC motors whose speed and direction are sensed using quadrature encoders.  The linear and angular velocity commands for the car can be sent over USB or Bluetooth.  An associated phone app was created that allows for remote control of the car via Bluetooth.  In order to quickly get to and maintain the desired linear and angular velocities a PID control system was implemented.  An Arduino Mega is used as the microcontroller for the car.
+
+# Table of Contents
+1. Summary of Functionality
+2. Repository Structure
+3. Tech Stack
+4. Process Description
+5. License
+6. Acknowledgments
+
+# Summary of Functionality
+-	Hardware switch to change velocity command source between USB and Bluetooth with indicator lights to signal which medium to robot is expecting a command to originate from
+-	Direction and speed of each wheel controlled by separate PID (Proportional-Integral-Differential) control system
+-	Maximum linear of the robot speed is set to 130 rpm, given the radius of the wheel that is 44.24 cm/s
+-	Maximum rotational speed of the robot is set to 200 deg/s
+-	Phone app uses slide switches to control robots linear and angular velocity, can immediatly stop linear motion, rotational motion or both using buttons
+-	App adds start and stop bits to velocity commands so that corrupted values are ignored are ignored
+-	App has window where user can see the current velocity of the robot and the velocity commands currently recieved by the robot
 
 
