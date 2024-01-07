@@ -18,4 +18,31 @@ The robot car is a two-wheel differential-drive mobile robot.  The wheels are ac
 -	App adds start and stop bits to velocity commands so that corrupted values are ignored are ignored
 -	App has window where user can see the current velocity of the robot and the velocity commands currently recieved by the robot
 
+# Repository Structure
+```
+├── Documents
+│   ├── 7_5V Step Responses.xlsx
+│   ├── Bill of Materials.xlsx
+│   ├── Motor Speed Vs PWM and Voltage.xlsx
+│   ├── Remote Control Robot Car.docx
+│   ├── Response Test.xlsx
+│   └── Time Metrics.xlsx
+├── include
+│   ├── Encoder.h
+│   ├── MotorDriver.h
+│   ├── PID.h
+│   ├── README
+│   └── SerialInputParsing.h
+├── lib
+│   └── README
+├── include
+│   ├── Encoder.cpp
+│   ├── MotorDriver.cpp
+│   ├── PID.cpp
+│   ├── SerialInputParsing.cpp
+│   └── main.cpp
+├── test
+│   └── README
+├── platformio.ini
+```
 
