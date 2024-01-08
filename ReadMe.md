@@ -46,11 +46,11 @@ The robot car is a two-wheel differential-drive mobile robot.  The wheels are ac
 ```
 # Code Description
 - **PID:**
-   - Calculates the control signal that should be sent to themtor drivers based on the error between the desired and current velocity of the motors
+   - Calculates the control signal that should be sent to the motor drivers based on the error between the desired and current velocity of the motors
 - **Encoder:**
-   - Calculates the current speed of the motor and determines their rotational direction using inputs from the quadratue encoders
+   - Calculates the current speed of the motor and determines their rotational direction using inputs from the quadrature encoders
 - **MotorDriver:**
-   - Sends the control signals that sets the motors speed and rotation direction.  Also enables/disables them
+   - Enables/Disables the motors and sends the control signals that sets the motors speed & direction of rotation
 - **SerialInputParsing:**
    - Determines the value of the velocity sent from the command source
    - Contains error detection code to sense of the data is corrupted or not
