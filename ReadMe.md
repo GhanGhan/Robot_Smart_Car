@@ -52,8 +52,18 @@ The robot car is a two-wheel differential-drive mobile robot.  The wheels are ac
 - **MotorDriver:**
    - Enables/Disables the motors and sends the control signals that sets the motors speed & direction of rotation
 - **SerialInputParsing:**
-   - Determines the value of the velocity sent from the command source
-   - Contains error detection code to sense of the data is corrupted or not
+   - Determines the value of the velocity sent from the command source, Bluetooth or USB
+   - Contains error detection code to sense of the recieved data is corrupted, in which case it will be thrown out
 - The .h files contain the class, functions and data structure declarations
 - The .c files manipulate the member variables, usually by applying algorithms and/or logic of varying complexity
+- **The test folder is intended for PlatformIO Unit Testing and project tests & the lib folder is intended to be used for project specific (private) libraries, neither is being used as of now
+- **main.c:**
+   - Instantiates timing, PID, motor control, encoder, speed, error detection and command source detection parameters
+   - Setup communication channels, enable motors and motor directions
+   - Done in a loop:
+       - Check if connected to Bluetooth or USB
+       - Get velocity command, ensure it is uncorropted, if it is throw it out
+       - Acquire current wheel velocity from the encoders, use this the the velocity command to calculate the next control signal
+       - Apply control signal to the motor drivers
+       - Send current linear and rotational velocity values to command source for printing
 
