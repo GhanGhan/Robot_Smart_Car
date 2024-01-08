@@ -5,6 +5,7 @@ The robot car is a two-wheel differential-drive mobile robot.  The wheels are ac
 1. Summary of Functionality
 2. Repository Structure
 3. Code Description
+4. Installation
 5. License
 6. Acknowledgments
 
@@ -66,4 +67,18 @@ The robot car is a two-wheel differential-drive mobile robot.  The wheels are ac
        - Acquire current wheel velocity from the encoders, use this the the velocity command to calculate the next control signal
        - Apply control signal to the motor drivers
        - Send current linear and rotational velocity values to command source for printing
+- **platformio.ini:**
+   - The configuration file that lets you set up your development environment, share your code and configurations with others, and leverage a declarative approach to development
+   - Can use platformio.ini to configure multiple platforms and architectures without having to worry about different toolchains or build systems for each one.
 
+# Installation
+- This project was primarily made using Visual Studio code and PlatformIO, to download both follow this guide from the [DroneBotWorkshop](https://dronebotworkshop.com/platformio/)
+- Can also use the (Arduino IDE 2)[https://docs.arduino.cc/software/ide-v2], follow this guide for dowloading and getting started
+    - This was useful for Serial plotting and debugging
+ 
+# License
+- [![License: CC BY 3.0](https://img.shields.io/badge/License-CC%20BY%203.0-lightgrey.svg)](https://creativecommons.org/licenses/by/3.0/)
+- This project is licensed under the [Creative Commons Attribution 3.0 Unported License](https://creativecommons.org/licenses/by/3.0/).
+  
+# Acknoledgments
+- I would like to thank the DroneBotWorkshop for notifying me about PlatformIO and helping me set it up
