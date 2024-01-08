@@ -73,7 +73,7 @@ The robot car is a two-wheel differential-drive mobile robot.  The wheels are ac
 
 # Installation
 - This project was primarily made using Visual Studio code and PlatformIO, to download both follow this guide from the [DroneBotWorkshop](https://dronebotworkshop.com/platformio/)
-- Can also use the (Arduino IDE 2)[https://docs.arduino.cc/software/ide-v2], follow this guide for dowloading and getting started
+- Can also use the [Arduino IDE 2](https://docs.arduino.cc/software/ide-v2), follow this guide for dowloading and getting started
     - This was useful for Serial plotting and debugging
  
 # License
