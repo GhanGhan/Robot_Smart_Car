@@ -1,5 +1,7 @@
 # Overview
 The robot car is a two-wheel differential-drive mobile robot.  The wheels are actuated by DC motors whose speed and direction are sensed using quadrature encoders.  The linear and angular velocity commands for the car can be sent over USB or Bluetooth.  An associated phone app was created that allows for remote control of the car via Bluetooth.  In order to quickly get to and maintain the desired linear and angular velocities a PID control system was implemented.  An Arduino Mega is used as the microcontroller for the car.
+![RoboComponents1](https://github.com/GhanGhan/Robot_Smart_Car/assets/17633599/79900a40-3f25-49c4-aa56-31075ebf370c)
+![RoboComponents2](https://github.com/GhanGhan/Robot_Smart_Car/assets/17633599/e374f934-4ac6-477c-83cc-e5df01be7d38)
 
 # Table of Contents
 1. Summary of Functionality
@@ -17,6 +19,7 @@ The robot car is a two-wheel differential-drive mobile robot.  The wheels are ac
 -	Phone app uses slide switches to control robots linear and angular velocity, can immediatly stop linear motion, rotational motion or both using buttons
 -	App adds start and stop bits to velocity commands so that corrupted values are ignored are ignored
 -	App has window where user can see the current velocity of the robot and the velocity commands currently recieved by the robot
+![DifferentialDrive](https://github.com/GhanGhan/Robot_Smart_Car/assets/17633599/81d85615-7332-4068-91cf-981762f15719)
 
 # Repository Structure
 ```
@@ -67,6 +70,8 @@ The robot car is a two-wheel differential-drive mobile robot.  The wheels are ac
        - Acquire current wheel velocity from the encoders, use this the the velocity command to calculate the next control signal
        - Apply control signal to the motor drivers
        - Send current linear and rotational velocity values to command source for printing
+![FlowControl1](https://github.com/GhanGhan/Robot_Smart_Car/assets/17633599/f74f8aac-6eee-4612-aaa9-56bf0fbc4456)
+![FlowControl2](https://github.com/GhanGhan/Robot_Smart_Car/assets/17633599/f5a37d6a-2597-468d-8ee2-eebee93cd685)
 - **platformio.ini:**
    - The configuration file that lets you set up your development environment, share your code and configurations with others, and leverage a declarative approach to development
    - Can use platformio.ini to configure multiple platforms and architectures without having to worry about different toolchains or build systems for each one.
