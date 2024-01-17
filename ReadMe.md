@@ -19,6 +19,7 @@ The robot car is a two-wheel differential-drive mobile robot.  The wheels are ac
 -	Phone app uses slide switches to control robots linear and angular velocity, can immediatly stop linear motion, rotational motion or both using buttons
 -	App adds start and stop bits to velocity commands so that corrupted values are ignored are ignored
 -	App has window where user can see the current velocity of the robot and the velocity commands currently recieved by the robot
+![Controller](https://github.com/GhanGhan/Robot_Smart_Car/assets/17633599/99a33d9c-0e09-4131-b2a9-4b33e344d6f2)
 ![DifferentialDrive](https://github.com/GhanGhan/Robot_Smart_Car/assets/17633599/81d85615-7332-4068-91cf-981762f15719)
 
 # Repository Structure
