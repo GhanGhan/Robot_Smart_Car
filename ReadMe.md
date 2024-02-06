@@ -1,5 +1,5 @@
 # Overview
-The robot car is a two-wheel differential-drive mobile robot.    An Arduino Mega is used as the microcontroller for the car as shown in *Figure 1*.  The wheels are actuated by DC motors whose speed and direction are sensed using quadrature encoders.  The linear and angular velocity commands for the car can be sent over USB or Bluetooth.  An associated phone app was created that allows for remote control of the car via Bluetooth.  In order to quickly get to and maintain the desired linear and angular velocities a PID control system was implemented.
+The robot car is a two-wheel differential-drive mobile robot.    An Arduino Mega is used as the microcontroller for the car as shown in *Figure 1*.  The wheels are actuated by DC motors whose speed and direction are sensed using quadrature encoders as shown in *Figure 2*.  The linear and angular velocity commands for the car can be sent over USB or Bluetooth.  I connected the robot to my laptop over USB to program the Arduino and to test the control system behaviour while the robot was stationary.  An associated phone app was created that allows for remote control of the car via Bluetooth.  In order to quickly get to and maintain the desired linear and angular velocities a PID control system was implemented.
 
 ![RoboComponents1](https://github.com/GhanGhan/Robot_Smart_Car/assets/17633599/79900a40-3f25-49c4-aa56-31075ebf370c)
 ***Figure 1: Robot Components Top View***
@@ -16,13 +16,13 @@ The robot car is a two-wheel differential-drive mobile robot.    An Arduino Mega
 6. Acknowledgments
 
 # Summary of Functionality
--	Hardware switch to change velocity command source between USB and Bluetooth with indicator lights to signal which medium to robot is expecting a command to originate from
--	Direction and speed of each wheel controlled by separate PID (Proportional-Integral-Differential) control system
--	Maximum linear of the robot speed is set to 130 rpm, given the radius of the wheel that is 44.24 cm/s
--	Maximum rotational speed of the robot is set to 200 deg/s
--	Phone app uses slide switches to control robots linear and angular velocity, can immediatly stop linear motion, rotational motion or both using buttons
+-	Hardware switch to change velocity command source between USB and Bluetooth with indicator lights to signal which medium to robot is expecting a command to originate from (see *Figure 1*)
+-	Phone app uses slide switches to control robots linear and angular velocity, can immediatly stop linear motion, rotational motion or both using buttons as shown in *Figure 3*
 -	App adds start and stop bits to velocity commands so that corrupted values are ignored are ignored
--	App has window where user can see the current velocity of the robot and the velocity commands currently recieved by the robot
+-	App has window where user can see the current velocity of the robot and the velocity commands currently recieved by the robot as shown in *Figure 3*
+-  Direction and speed of each wheel controlled by separate PID (Proportional-Integral-Differential) control system
+-	Maximum linear of the robot speed is set to 130 rpm, given the radius of the wheel that is 0.4424 m/s, *Figure 4* details the robot velocity calcultions
+-	Maximum rotational speed of the robot is set to 200 deg/s
 ![Controller_Enlarged](https://github.com/GhanGhan/Robot_Smart_Car/assets/17633599/b98a65c2-907a-44a8-942d-68309febd8c5)
 ***Figure 3: Phone App User Interface***
 
@@ -46,7 +46,7 @@ The robot car is a two-wheel differential-drive mobile robot.    An Arduino Mega
 │   └── SerialInputParsing.h
 ├── lib
 │   └── README
-├── include
+├── src
 │   ├── Encoder.cpp
 │   ├── MotorDriver.cpp
 │   ├── PID.cpp
@@ -67,9 +67,9 @@ The robot car is a two-wheel differential-drive mobile robot.    An Arduino Mega
    - Determines the value of the velocity sent from the command source, Bluetooth or USB
    - Contains error detection code to sense of the recieved data is corrupted, in which case it will be thrown out
 - The .h files contain the class, functions and data structure declarations
-- The .c files manipulate the member variables, usually by applying algorithms and/or logic of varying complexity
+- The .cpp files manipulate the member variables, usually by applying algorithms and/or logic of varying complexity
 - **The test folder is intended for PlatformIO Unit Testing and project tests & the lib folder is intended to be used for project specific (private) libraries, neither is being used as of now
-- **main.c:**
+- **main.cpp:**
    - Instantiates timing, PID, motor control, encoder, speed, error detection and command source detection parameters
    - Setup communication channels, enable motors and motor directions
    - Done in a loop:
