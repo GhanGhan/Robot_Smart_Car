@@ -20,8 +20,10 @@ The robot car is a two-wheel differential-drive mobile robot.    An Arduino Mega
 -	Phone app uses slide switches to control robots linear and angular velocity, can immediatly stop linear motion, rotational motion or both using buttons as shown in *Figure 3*
 -	App adds start and stop bits to velocity commands so that corrupted values are ignored are ignored
 -	App has window where user can see the current velocity of the robot and the velocity commands currently recieved by the robot as shown in *Figure 3*
--  Direction and speed of each wheel controlled by separate PID (Proportional-Integral-Differential) control system
--	Maximum linear of the robot speed is set to 130 rpm, given the radius of the wheel that is 0.4424 m/s, *Figure 4* details the robot velocity calcultions
+-  The velocity of each wheel is controlled by a PID (Proportional-Integral-Differential) control system, one for each wheel, the resulting linear and angular velocity of the robot given the individual wheel velocities are shown in *Figure 4*
+   - **I programmed the PID controller from the ground up, no third party library was used!!!**
+   - Gains: Kp = 5.75, Ki = 7, Kd = 0.02
+-	Maximum linear of the robot speed is set to 130 rpm, given the radius of the wheel that is 0.4424 m/s, *Figure 4* details the robot velocity calculations
 -	Maximum rotational speed of the robot is set to 200 deg/s
 ![Controller_Enlarged](https://github.com/GhanGhan/Robot_Smart_Car/assets/17633599/b98a65c2-907a-44a8-942d-68309febd8c5)
 ***Figure 3: Phone App User Interface***
