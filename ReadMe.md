@@ -36,7 +36,7 @@ The robot car is a two-wheel differential-drive mobile robot.    An Arduino Mega
 [![Prototyping Send Speed Commands over USB](https://github.com/GhanGhan/Robot_Smart_Car/assets/17633599/764d00ed-fd79-4bbe-b90f-5bd8e33c2ef5)](https://www.youtube.com/watch?v=zZjfyD7H7h0)
 ***Video 1: Prototyping - Send Velocity commands from terminal over USB***
 [![Prototyping Verifying PID response](https://img.youtube.com/vi/zZjfyD7H7h0/0.jpg)](https://www.youtube.com/shorts/CAmJJKoBGaM)
-***Video 1: Prototyping - Verifying PID Response***
+***Video 2: Prototyping - Verifying PID Response***
 [![Remote_Control_Screen_Recording](http://i3.ytimg.com/vi/FXt78br-hj0/hqdefault.jpg)](https://www.youtube.com/watch?v=FXt78br-hj0)
 ***Video 3: Operation - Remote Contorl Screen Recording***
 
