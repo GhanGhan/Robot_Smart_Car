@@ -9,11 +9,12 @@ The robot car is a two-wheel differential-drive mobile robot.    An Arduino Mega
 
 # Table of Contents
 1. Summary of Functionality
-2. Repository Structure
-3. Code Description
-4. Installation
-5. License
-6. Acknowledgments
+2. Prototyping and Operation Videos
+3. Repository Structure
+4. Code Description
+5. Installation
+6. License
+7. Acknowledgments
 
 # Summary of Functionality
 -	Hardware switch to change velocity command source between USB and Bluetooth with indicator lights to signal which medium to robot is expecting a command to originate from (see *Figure 1*)
@@ -30,6 +31,10 @@ The robot car is a two-wheel differential-drive mobile robot.    An Arduino Mega
 
 ![DifferentialDrive](https://github.com/GhanGhan/Robot_Smart_Car/assets/17633599/81d85615-7332-4068-91cf-981762f15719)
 ***Figure 4: Linear and Angular Velocity Equations***
+
+# Prototyping and Operation Videos
+[![Prototyping_Verifying PID response_frame1](https://github.com/GhanGhan/Robot_Smart_Car/assets/17633599/5b347623-7846-41b6-8e49-3c30c782f8f9)](https://1drv.ms/v/s!Aq11Y5VPrVDimj7deaNZKtlBH9lH?e=75ZPZQ)
+
 
 # Repository Structure
 ```
