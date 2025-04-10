@@ -37,6 +37,18 @@ The robot car is a two-wheel differential-drive mobile robot.    An Arduino Mega
 [![VidPic1_25%](https://github.com/GhanGhan/Robot_Smart_Car/assets/17633599/1c135c02-4902-49fa-944f-2a51f0117150)](https://www.youtube.com/watch?v=zZjfyD7H7h0)
 [![VidPic2_25%](https://github.com/GhanGhan/Robot_Smart_Car/assets/17633599/860daa63-4580-47f3-8783-7e725af58f42)](https://www.youtube.com/watch?v=FXt78br-hj0)
 
+# Response Plots
+## Sinusoidal Inputs
+![50sin](https://github.com/user-attachments/assets/3fbddac4-f256-4f11-85d9-4453e9f535ff)
+![130sin](https://github.com/user-attachments/assets/e964c6a3-875c-435e-9a6c-78afce7ba43c)
+
+## Ramp Input
+![Ramp](https://github.com/user-attachments/assets/9d647bd0-0dfb-46f3-9678-99afd95142cc)
+
+## Step Inputs
+![StepUpTo130](https://github.com/user-attachments/assets/1d8a5c0d-d103-465d-bcd2-d4f097dda70e)
+![StepDownTo0](https://github.com/user-attachments/assets/cb410152-55f1-4b3b-ad35-5dc08b143372)
+
 
 
 # Repository Structure
